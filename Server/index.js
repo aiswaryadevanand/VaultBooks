@@ -18,6 +18,10 @@ app.use('/api/wallets', walletRoutes);
 const transactionRoutes = require('./routes/transactionRoutes');
 app.use('/api/transactions', transactionRoutes);
 
+const budgetRoutes = require('./routes/budgetRoutes');
+app.use('/api/budgets', budgetRoutes);
+
+
 app.get('/', (req, res) => {
     res.send('VaultBooks Backend is running');
 });
