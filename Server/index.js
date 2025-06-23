@@ -7,6 +7,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ✅ Connect your routes here
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
 app.get('/', (req, res) => {
     res.send('VaultBooks Backend is running');
 });
