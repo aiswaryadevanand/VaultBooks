@@ -24,7 +24,7 @@ A live record of tasks, assignments, and progress for the VaultBooks MERN stack 
 | Folder Structure (`client/`, `server/`) | Owner          | `main`                     | ✅ Done       |
 | Auth (Register/Login/JWT)   | Dev 1          | `dev1/auth`                | 🔄 In Progress |
 | Reminder System             | Dev 1          | `dev1/reminders`           | ⏳ Not Started |
-| Wallets (Create/Edit/Delete)| Owner          | `owner/wallets`            | ⏳ Not Started |
+| Wallets (Create/Edit/Delete)| Owner          | `owner/wallets`            | 🔄 In Progress |
 | Transactions CRUD           | Dev 2          | `dev2/transactions`        | ⏳ Not Started |
 | Budget Module               | Dev 2          | `dev2/budget`              | ⏳ Not Started |
 | Audit Logs                  | Dev 2          | `dev2/audit-logs`          | ⏳ Not Started |
