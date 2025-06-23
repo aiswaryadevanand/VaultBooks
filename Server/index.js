@@ -15,6 +15,9 @@ const walletRoutes = require('./routes/walletRoutes');
 app.use('/api/wallets', walletRoutes);
 
 
+const transactionRoutes = require('./routes/transactionRoutes');
+app.use('/api/transactions', transactionRoutes);
+
 app.get('/', (req, res) => {
     res.send('VaultBooks Backend is running');
 });
@@ -26,3 +29,6 @@ connectDB().then(() => {
         console.log(`Server is running on port ${PORT}`);
     });
 });
+
+
+
