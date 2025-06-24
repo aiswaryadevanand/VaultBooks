@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
@@ -6,7 +7,16 @@ const transactionSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  title: {
+  walletId: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ['income', 'expense', 'transfer'],
+    required: true
+  },
+  category: {
     type: String,
     required: true
   },
@@ -14,27 +24,25 @@ const transactionSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  type: {
-    type: String,
-    enum: ['income', 'expense'],
-    required: true
-  },
-  category: {
+  note: {
     type: String
   },
-  walletId: {
+  tags: {
+    type: [String],
+    default: []
+  },
+  fileUrl: {
     type: String
   },
   date: {
     type: Date,
-    default: Date.now
-  },
-  notes: {
-    type: String
+    required: true
   }
 }, {
   timestamps: true
 });
 
-// ✅ This line must be here
 module.exports = mongoose.model('Transaction', transactionSchema);
+
+
+
