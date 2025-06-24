@@ -29,3 +29,27 @@ exports.createWallet = async (req, res) => {
             res.status(500).json({ error: 'Error fetching wallets', details: err.message });
         }
     };
+
+    exports.updateWallet = async (req, res) => {
+        try {
+            const updated= await Wallet.findByIdAndUpdate(
+                req.params.id,
+                {name: req.body.name, type: req.body.type},
+                { new: true }
+            );
+            res.json(updated);
+        }
+        catch (err) {
+            res.status(500).json({ error: 'Error updating wallet', details: err.message });
+        }
+    };
+
+    exports.deleteWallet = async (req, res) => {
+        try {
+            await Wallet.findByIdAndDelete(req.params.id);
+            res.json({ message: 'Wallet deleted successfully' });
+        }
+        catch (err) {
+            res.status(500).json({ error: 'Error deleting wallet', details: err.message });
+        }
+    };
