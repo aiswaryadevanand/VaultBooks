@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import axios from 'axios';
 
@@ -18,7 +19,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const res = await axios.post('http://localhost:5000/api/auth/register', formData);
-      setMessage(res.data.message);
+      setMessage(res.data.message || 'Registered successfully!');
     } catch (error) {
       setMessage(error.response?.data?.message || 'Registration failed');
     }
