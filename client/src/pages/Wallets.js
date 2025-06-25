@@ -1,15 +1,19 @@
 import React,{useState,useEffect} from "react";
+import { useNavigate } from "react-router-dom"; 
 import { useSelector, useDispatch } from "react-redux";
+
 import { 
   fetchWallets,
   createWallet,
   updateWallet,
-  deleteWallet } from "../redux/slices/walletSlice";  
+  deleteWallet,
+  setSelectedWallet } from "../redux/slices/walletSlice";  
 
 
 
 const Wallets = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { wallets, status, error } = useSelector((state) => state.wallets);
 
   const [formData, setFormData] = useState({name: "", type: 'personal' });
@@ -44,6 +48,11 @@ const Wallets = () => {
       }
     }
 
+    const goToBudgets = (wallet) => {
+      dispatch(setSelectedWallet(wallet));
+      navigate(`/wallets/${wallet._id}/budgets`);
+    }
+
     return (
       <div className="max-w-2xl mx-auto p-4">
         <h2 className="text-2xl font-bold text-center mb-6">💼 Wallets</h2>
@@ -75,7 +84,9 @@ const Wallets = () => {
 
         <div className="space-y-3">
           {wallets.map((wallet) => (
-            <div key={wallet._id} className="bg-gray-100 p-4 rounded shadow-sm flex justify-between items-center">
+            <div key={wallet._id}
+            onClick={() => editId !== wallet._id && goToBudgets(wallet)}
+             className="bg-gray-100 p-4 rounded shadow-sm flex justify-between items-center cursor-pointer hover:bg-gray-200">
               {editId === wallet._id ? (
                 <div className="flex flex-col md:flex-row items-center gap-2 w-full">
                   <input

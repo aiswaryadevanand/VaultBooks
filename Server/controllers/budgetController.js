@@ -2,9 +2,9 @@ const Budget= require('../models/Budget');
 const Wallet = require('../models/Wallet');
 
 const isAuthorizedForWallet = (wallet, userId) => {
-  return wallet.createdBy.equals(userId) || wallet.members.some(m => m.user.equals(userId));
+  return wallet.createdBy.equals(userId) || wallet.members.some(m => m.toString()===userId.toString());
 }
-
+console.log("🚨 createBudget called!");
 exports.createBudget = async (req, res) => {
   try {
     const { walletId, category, limit } = req.body;
@@ -14,20 +14,26 @@ exports.createBudget = async (req, res) => {
     if (!wallet){
       return res.status(404).json({ message: 'Wallet not found' });
     }
+     
 
     if (!isAuthorizedForWallet(wallet, userId)) {
       return res.status(403).json({ message: 'Unauthorized to create budget for this wallet' });
     }
-
+   
     const budget = await Budget.create({
       walletId,
       category,
-      limit
+      limit,
+      spent: 0, // Default spent amount
     });
+     
     res.status(201).json(budget);
+    
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+ 
 };
 
 exports.getBudgets = async (req, res) => {

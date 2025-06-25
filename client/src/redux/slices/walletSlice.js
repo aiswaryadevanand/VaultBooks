@@ -71,6 +71,7 @@ export const deleteWallet = createAsyncThunk('wallets/deleteWallet',
 const walletSlice = createSlice({
     name: 'wallets',
     initialState: {
+        selectedWallet: null,
         wallets: [],
         status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
         error: null,
@@ -81,6 +82,9 @@ const walletSlice = createSlice({
             state.status = 'idle';
             state.error = null;
         },
+        setSelectedWallet: (state, action) => {
+            state.selectedWallet = action.payload;
+}
     },
     extraReducers: (builder) => {
         builder
@@ -120,5 +124,5 @@ const walletSlice = createSlice({
             });
         },
     });
-export const { resetWalletState } = walletSlice.actions;
+export const { resetWalletState,setSelectedWallet } = walletSlice.actions;
 export default walletSlice.reducer;
