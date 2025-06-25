@@ -1,19 +1,22 @@
-const express = require('express');
-const router = express.Router();
+const express= require('express');
+const router= express.Router();
+const authMiddleware = require('../middlewares/authMiddleware'); // Assuming you have an auth middleware
 const {
-  getBudgets,
-  createBudget,
-  updateBudget,
-  deleteBudget
+    createBudget,
+    getBudgets,
+    updateBudget,
+    deleteBudget
 } = require('../controllers/budgetController');
 
-// Unprotected routes (using dummy user)
-router.route('/')
-  .get(getBudgets)
-  .post(createBudget);
+// Middleware to check if user is authenticated
+router.use(authMiddleware);   
+// Create a new budget
+router.post('/', createBudget);   
+// Get budgets for a specific wallet
+router.get('/:walletId', getBudgets);
+// Update a budget by ID
+router.put('/:id', updateBudget);
+// Delete a budget by ID    
+router.delete('/:id', deleteBudget);
 
-router.route('/:id')
-  .put(updateBudget)
-  .delete(deleteBudget);
-
-module.exports = router;
+module.exports = router;    
