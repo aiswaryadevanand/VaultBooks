@@ -21,6 +21,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />}>
           <Route path="wallets" element={<Wallets />} />
           
+          
          
           {/* Add other child routes as needed */}
         </Route>
