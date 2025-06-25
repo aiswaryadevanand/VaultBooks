@@ -27,17 +27,16 @@ const Register = () => {
     setMessage('');
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/register', formData);
+      await axios.post('http://localhost:5000/api/auth/register', formData);
       const loginRes = await axios.post('http://localhost:5000/api/auth/login', {
         email: formData.email,
         password: formData.password,
       });
 
       const { token, user } = loginRes.data;
-
       dispatch(setCredentials({ token, user }));
-      setMessage('Registration successful! Redirecting...');
 
+      setMessage('Registration successful! Redirecting...');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
       setMessage(err.response?.data?.message || 'Registration failed');
@@ -45,29 +44,22 @@ const Register = () => {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-      
-      {/* Left Side */}
-      <div style={{
-        width: '50%',
-        padding: '40px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
-      }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '20px' }}>VaultBooks</h1>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '10px' }}>Create an Account</h2>
-        <p style={{ marginBottom: '30px', color: '#333' }}>Join us today by entering your details below.</p>
+    <div className="flex h-screen">
 
-        <form onSubmit={handleSubmit}>
+      {/* Left Side */}
+      <div className="w-1/2 flex flex-col justify-center bg-gray-100 p-10">
+        <h1 className="text-3xl font-bold mb-6">VaultBooks</h1>
+        <h2 className="text-xl font-semibold mb-2">Create an Account</h2>
+        <p className="text-gray-700 mb-8">Join us today by entering your details below.</p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             name="username"
             placeholder="Username"
             onChange={handleChange}
             required
-            style={{ width: '100%', padding: '10px', marginBottom: '15px' }}
+            className="w-full p-3 border border-gray-300 rounded"
           />
           <input
             type="email"
@@ -75,7 +67,7 @@ const Register = () => {
             placeholder="Email"
             onChange={handleChange}
             required
-            style={{ width: '100%', padding: '10px', marginBottom: '15px' }}
+            className="w-full p-3 border border-gray-300 rounded"
           />
           <input
             type="password"
@@ -83,53 +75,45 @@ const Register = () => {
             placeholder="Password"
             onChange={handleChange}
             required
-            style={{ width: '100%', padding: '10px', marginBottom: '20px' }}
+            minLength={8}
+            className="w-full p-3 border border-gray-300 rounded"
           />
+
           <button
             type="submit"
-            style={{ width: '100%', padding: '10px', backgroundColor: '#333', color: '#fff', border: 'none' }}
+            className="w-full bg-gray-800 text-white py-3 rounded hover:bg-gray-700 transition"
           >
             Signup
           </button>
         </form>
 
-        <p style={{ marginTop: '15px', color: 'green' }}>{message}</p>
+        {message && <p className="mt-4 text-green-600">{message}</p>}
 
-        <p style={{ marginTop: '20px' }}>
+        <p className="mt-6">
           Already have an account?{' '}
           <span
-            style={{ color: '#007bff', cursor: 'pointer' }}
             onClick={() => navigate('/login')}
+            className="text-blue-600 cursor-pointer hover:underline"
           >
             Login
           </span>
         </p>
       </div>
-      {/* Right Side: Wallet animation on top, image slightly higher */}
-<div style={{
-  width: '50%',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'flex-start', // Align everything to the top
-  backgroundColor: '#f0f0f0',
-  padding: '50px',
-  
-}}>
-  <Player
-    autoplay
-    loop
-    src={walletAnim}
-    style={{ height: '150px', width: '150px' }}
-  />
-  
-  <img 
-    src="/Main-img.png" 
-    alt="VaultBooks Illustration"
-    style={{ width: '80%', height: 'auto', objectFit: 'contain'}}
-  />
-</div>
 
+      {/* Right Side */}
+      <div className="w-1/2 flex flex-col items-center justify-start bg-gray-200 p-10 ">
+        <Player
+          autoplay
+          loop
+          src={walletAnim}
+          className="w-36 h-36 mb-6"
+        />
+        <img
+          src="/Main-img.png"
+          alt="VaultBooks Illustration"
+          className="w-4/5 h-auto object-contain mt-2"
+        />
+      </div>
     </div>
   );
 };

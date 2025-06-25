@@ -16,7 +16,7 @@ const DashboardLayout = () => {
     { label: 'Dashboard', icon: <FaTachometerAlt />, path: '/dashboard' },
     { label: 'Wallets', icon: <FaWallet />, path: '/dashboard/wallets' },
     { label: 'Transactions', icon: <FaExchangeAlt />, path: '/dashboard/transactions' },
-    { label: 'Budgets', icon: <FaChartPie />, path: '/dashboard/budgets' },
+    // { label: 'Budgets', icon: <FaChartPie />, path: '/dashboard/budgets' },
     { label: 'Reports', icon: <FaFileAlt />, path: '/dashboard/reports' },
     { label: 'Audit Logs', icon: <FaScroll />, path: '/dashboard/audit-logs' },
     { label: 'Team', icon: <FaUsers />, path: '/dashboard/team' }
