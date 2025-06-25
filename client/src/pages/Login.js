@@ -24,6 +24,8 @@ function Login() {
       const res = await axios.post('http://localhost:5000/api/auth/login', formData);
       const { token, user, message } = res.data;
 
+      localStorage.setItem('token', token);
+      // ✅ Set Redux credentials
       dispatch(setCredentials({ token, user }));
       setMessage(message || 'Login successful!');
       setTimeout(() => {

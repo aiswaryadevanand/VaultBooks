@@ -1,3 +1,4 @@
+
 const express= require('express');
 const router= express.Router();
 const authMiddleware = require('../middlewares/authMiddleware'); // Assuming you have an auth middleware
@@ -18,5 +19,6 @@ router.get('/:walletId', getBudgets);
 router.put('/:id', updateBudget);
 // Delete a budget by ID    
 router.delete('/:id', deleteBudget);
+
 
 module.exports = router;    
