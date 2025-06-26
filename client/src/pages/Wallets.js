@@ -50,7 +50,7 @@ const Wallets = () => {
 
     const goToBudgets = (wallet) => {
       dispatch(setSelectedWallet(wallet));
-      navigate(`/wallets/${wallet._id}/budgets`);
+      navigate(`/dashboard/wallets/${wallet._id}/budgets`);
     }
 
     return (
