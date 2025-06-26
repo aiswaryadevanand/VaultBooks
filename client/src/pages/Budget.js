@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate,useParams} from 'react-router-dom';
 import {
   getBudgets,
   createBudget,
@@ -8,8 +9,8 @@ import {
 } from '../api/budgetAPI';
 
 const Budget = () => {
-  const selectedWallet = useSelector((state) => state.wallets.selectedWallet);
-  const walletId = selectedWallet?._id;
+  const { id: walletId } = useParams(); // 👈 get walletId from URL
+  const navigate = useNavigate();
 
   const [budgets, setBudgets] = useState([]);
   const [category, setCategory] = useState('');
@@ -72,6 +73,13 @@ const Budget = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
+       <button
+        onClick={() => navigate('/dashboard/wallets')}
+        className="mb-4 bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition"
+      >
+        ← Back to Wallets
+      </button>
+
       <h2 className="text-2xl font-bold mb-4 text-center">💰 Budget Tracker</h2>
 
       <form onSubmit={handleCreate} className="bg-white shadow p-4 rounded-md mb-6 space-y-4">
