@@ -8,7 +8,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard'; 
 import DashboardHome from './pages/DashboardHome';     
 import Wallets from './pages/Wallets';
-import Transactions from './pages/Transactions';
+import Transactions from './pages/TransactionsPage';
 import Budget from './pages/Budget';
 import Reports from './pages/Reports';
 import AuditLogs from './pages/AuditLogs';
