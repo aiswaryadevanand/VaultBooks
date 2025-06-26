@@ -123,6 +123,15 @@ const Wallets = () => {
                 <button
                   onClick={() => handleDelete(wallet._id)}
                   className="text-sm text-red-600 hover:underline">Delete</button>
+                  <button
+  onClick={(e) => {
+    e.stopPropagation(); // Prevent triggering wallet click
+    navigate(`/wallets/${wallet._id}/reminders`);
+  }}
+  className="text-sm text-purple-600 hover:underline"
+>
+  🔔 Reminders
+</button>
       </div>
       </>)}
          

@@ -151,6 +151,8 @@ const Budget = () => {
                 <div className="w-full">
                   <h3 className="text-lg font-semibold">{budget.category}</h3>
                   <p className="text-sm text-gray-600">₹{budget.spent} / ₹{budget.limit}</p>
+
+                  {/* ✅ Progress Bar */}
                   <div className="w-full bg-gray-300 h-3 rounded overflow-hidden mt-1">
                     <div
                       className={`h-full transition-all duration-300 ${(budget.spent / budget.limit) * 100 >= 100 ? 'bg-red-500' : 'bg-green-500'
@@ -158,7 +160,20 @@ const Budget = () => {
                       style={{ width: `${Math.min((budget.spent / budget.limit) * 100, 100)}%` }}
                     />
                   </div>
+
+                  {/* ✅ Percentage Label */}
+                  <p className="text-xs text-right mt-1 text-gray-500">
+                    {Math.min(((budget.spent / budget.limit) * 100), 100).toFixed(0)}% used
+                  </p>
+
+                  {/* ✅ Visual Alert */}
+                  {budget.spent >= budget.limit && (
+                    <p className="text-xs text-red-600 font-medium mt-1">
+                      ⚠️ Budget exceeded
+                    </p>
+                  )}
                 </div>
+
 
                 <div className="flex gap-4">
                   <button
