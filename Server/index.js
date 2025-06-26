@@ -7,6 +7,8 @@ const connectDB = require('./config/db');
 const app = express();
 app.use(cors());
 app.use(express.json());
+const cron=require('node-cron');
+const Reminder = require('./models/Reminder');
 
 //✅ Connect your routes here
 const authRoutes = require('./routes/authRoutes');
@@ -35,6 +37,7 @@ connectDB().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });
+  
 });
 
 
