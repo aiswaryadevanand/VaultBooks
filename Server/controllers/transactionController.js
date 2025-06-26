@@ -26,7 +26,7 @@ const createTransaction = async (req, res) => {
     walletId
   } = req.body;
 
-  const fileUrl = req.file ? req.file.path : null;
+  const fileUrl = req.file ? `uploads/${req.file.filename}` : null;
 
   try {
     const transaction = new Transaction({
@@ -49,11 +49,36 @@ const createTransaction = async (req, res) => {
 };
 
 // @desc Update transaction
+
 const updateTransaction = async (req, res) => {
   try {
+    const {
+      category,
+      amount,
+      type,
+      note,
+      date,
+      tags,
+      walletId
+    } = req.body;
+
+    const updatedFields = {
+      category,
+      amount,
+      type,
+      note,
+      date,
+      walletId,
+      tags,
+    };
+
+    if (req.file) {
+      updatedFields.fileUrl = `uploads/${req.file.filename}`;
+    }
+
     const updated = await Transaction.findOneAndUpdate(
       { _id: req.params.id, userId: TEST_USER_ID },
-      req.body,
+      updatedFields,
       { new: true }
     );
 

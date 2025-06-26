@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Register from './pages/Register';
 import Login from './pages/Login'; // 🔹 import login
 import Wallets from './pages/Wallets';
+import TransactionsPage from './pages/TransactionsPage';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} /> {/* 🔹 add this */}
         <Route path="/wallets" element={<Wallets />} />
+        <Route path="/transactions" element={<TransactionsPage />} />
       </Routes>
     </Router>
   );

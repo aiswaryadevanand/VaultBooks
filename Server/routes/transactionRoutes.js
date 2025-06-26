@@ -1,5 +1,4 @@
 
-
 const express = require('express');
 const {
   getTransactions,
@@ -24,7 +23,7 @@ router.route('/')
 router.route('/:id')
   // .put(protect, updateTransaction)
   // .delete(protect, deleteTransaction);
-  .put(updateTransaction)
+  .put(upload.single('file'), updateTransaction) // ✅ also handle file upload on update
   .delete(deleteTransaction);
 
 module.exports = router;
