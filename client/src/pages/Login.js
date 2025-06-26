@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -25,9 +26,9 @@ function Login() {
       const { token, user, message } = res.data;
 
       localStorage.setItem('token', token);
-      // ✅ Set Redux credentials
       dispatch(setCredentials({ token, user }));
       setMessage(message || 'Login successful!');
+
       setTimeout(() => {
         navigate('/dashboard');
       }, 1500);
@@ -37,29 +38,21 @@ function Login() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-      
+    <div className="flex h-screen">
       {/* Left Side */}
-      <div style={{
-        width: '50%',
-        padding: '40px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
-      }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '20px' }}>VaultBooks</h1>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '10px' }}>Welcome Back</h2>
-        <p style={{ marginBottom: '30px', color: '#333' }}>Please enter your details to log in.</p>
+      <div className="w-1/2 flex flex-col justify-center bg-gray-100 px-10">
+        <h1 className="text-3xl font-bold mb-6">VaultBooks</h1>
+        <h2 className="text-xl font-semibold mb-2">Welcome Back</h2>
+        <p className="mb-6 text-gray-700">Please enter your details to log in.</p>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             name="email"
             placeholder="Email"
             onChange={handleChange}
             required
-            style={{ width: '100%', padding: '10px', marginBottom: '15px' }}
+            className="w-full p-3 border border-gray-300 rounded"
           />
           <input
             type="password"
@@ -67,22 +60,24 @@ function Login() {
             placeholder="Password"
             onChange={handleChange}
             required
-            style={{ width: '100%', padding: '10px', marginBottom: '20px' }}
+            className="w-full p-3 border border-gray-300 rounded"
           />
           <button
             type="submit"
-            style={{ width: '100%', padding: '10px', backgroundColor: '#333', color: '#fff', border: 'none' }}
+            className="w-full p-3 bg-gray-800 text-white rounded hover:bg-gray-700 transition"
           >
             Login
           </button>
         </form>
 
-        <p style={{ marginTop: '15px', color: 'green' }}>{message}</p>
+        {message && (
+          <p className="mt-4 text-green-600 font-medium">{message}</p>
+        )}
 
-        <p style={{ marginTop: '20px' }}>
+        <p className="mt-6">
           Don't have an account?{' '}
           <span
-            style={{ color: '#007bff', cursor: 'pointer' }}
+            className="text-blue-600 cursor-pointer hover:underline"
             onClick={() => navigate('/register')}
           >
             Sign Up
@@ -91,28 +86,19 @@ function Login() {
       </div>
 
       {/* Right Side (Animation + Image) */}
-      <div style={{
-        width: '50%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start', // Align everything to the top
-        backgroundColor: '#f0f0f0',
-        padding: '50px',
-      }}>
+      <div className="w-1/2 flex flex-col items-center justify-start bg-gray-200 p-10">
         <Player
           autoplay
           loop
           src={moneyAnim}
-          style={{ height: '150px', width: '150px' }}
+          className="w-40 h-40 mb-6"
         />
-        <img 
-          src="/Main-img.png" 
+        <img
+          src="/Main-img.png"
           alt="VaultBooks Illustration"
-          style={{ width: '80%', height: 'auto', objectFit: 'contain'}}
+          className="w-4/5 object-contain"
         />
       </div>
-      
     </div>
   );
 }
