@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
 import {
-  FaTachometerAlt, FaWallet, FaExchangeAlt, FaChartPie,
+  FaTachometerAlt, FaWallet, FaExchangeAlt, 
   FaFileAlt, FaScroll, FaUsers, FaSignOutAlt
 } from 'react-icons/fa';
 
