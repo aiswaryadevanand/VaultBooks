@@ -13,6 +13,7 @@ import Budget from './pages/Budget';
 import Reports from './pages/Reports';
 import AuditLogs from './pages/AuditLogs';
 import Team from './pages/Team';
+import Reminder from './pages/Reminder';
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         {/* <Route path="/wallets/:id/budget" element={<Budget />} /> */}
+        <Route path="/wallets/:id/reminders" element={<Reminder/>} />
 
         {/* Dashboard layout with nested content */}
         <Route path="/dashboard" element={<Dashboard />}>
@@ -36,6 +38,7 @@ function App() {
           <Route path="wallets" element={<Wallets />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="wallets/:id/budgets" element={<Budget />} />
+          
           <Route path="reports" element={<Reports />} />
           <Route path="audit-logs" element={<AuditLogs />} />
           <Route path="team" element={<Team />} />
