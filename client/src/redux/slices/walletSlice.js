@@ -34,9 +34,44 @@ export const createWallet = createAsyncThunk('wallets/createWallet',
     }
 );
 
+export const updateWallet = createAsyncThunk('wallets/updateWallet',
+    async({ id, name, type }, { rejectWithValue, getState }) => {
+        try{
+            const {auth} = getState();
+            const res = await axios.put(`http://localhost:5000/api/wallets/${id}`, { name, type }, {
+                headers: {
+                    authorization: `Bearer ${auth.token}`,
+                },
+            });
+            return res.data;
+        }catch (err) {
+            return rejectWithValue(err.response?.data?.error || err.message);   
+        }
+    }
+);
+
+export const deleteWallet = createAsyncThunk('wallets/deleteWallet',
+    async (id, { rejectWithValue, getState }) => {
+        try {
+            const {auth} = getState();
+            await axios.delete(`http://localhost:5000/api/wallets/${id}`, {
+                headers: {
+                    authorization: `Bearer ${auth.token}`,
+                },
+            });
+            return id; // Return the ID of the deleted wallet
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.error || err.message);
+        }
+    }
+);
+
+
+
 const walletSlice = createSlice({
     name: 'wallets',
     initialState: {
+        selectedWallet: null,
         wallets: [],
         status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
         error: null,
@@ -47,6 +82,9 @@ const walletSlice = createSlice({
             state.status = 'idle';
             state.error = null;
         },
+        setSelectedWallet: (state, action) => {
+            state.selectedWallet = action.payload;
+}
     },
     extraReducers: (builder) => {
         builder
@@ -68,8 +106,23 @@ const walletSlice = createSlice({
             })
             .addCase(createWallet.rejected, (state, action) => {
                 state.error = action.payload;
+            })
+            .addCase(updateWallet.fulfilled, (state, action) => {
+                const index = state.wallets.findIndex(w => w._id === action.payload._id);
+                if (index !== -1) {
+                    state.wallets[index] = action.payload;
+                }
+            })
+            .addCase(updateWallet.rejected, (state, action) => {
+                state.error = action.payload;
+            })
+            .addCase(deleteWallet.fulfilled, (state, action) => {
+                state.wallets = state.wallets.filter(w => w._id !== action.payload);
+            })
+            .addCase(deleteWallet.rejected, (state, action) => {
+                state.error = action.payload;
             });
         },
     });
-export const { resetWalletState } = walletSlice.actions;
+export const { resetWalletState,setSelectedWallet } = walletSlice.actions;
 export default walletSlice.reducer;

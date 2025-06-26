@@ -1,37 +1,23 @@
 const mongoose = require('mongoose');
 
 const budgetSchema = new mongoose.Schema({
-  userId: {
+  walletId:{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Wallet',
     required: true
   },
   category: {
     type: String,
-    required: true
+    required: true,
   },
-  walletId: {
-    type: String
-  },
-  amount: {
+  limit: {
     type: Number,
-    required: true
+    required: true,
   },
-  period: {
-    type: String,
-    enum: ['weekly', 'monthly', 'yearly'],
-    default: 'monthly'
-  },
-  startDate: {
-    type: Date,
-    required: true
-  },
-  endDate: {
-    type: Date,
-    required: true
+  spent: {
+    type: Number,
+    default: 0,
   }
-}, {
-  timestamps: true
-});
+}, {timestamps: true});
 
 module.exports = mongoose.model('Budget', budgetSchema);

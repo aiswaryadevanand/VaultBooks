@@ -8,7 +8,8 @@ Use this board to track the progress of all tasks. Move tasks across columns by 
 
 - [ ] 🟢 Project structure & folder setup (`owner/init-setup`)
 - [ ] 🔵 Register/Login API with JWT (`dev1/auth`)
-- [ ] 🟢 Wallet CRUD API & UI (`owner/wallets`)
+- [ ] 🟣 Transaction CRUD backend (`dev2/transactions`)
+
 - [ ] 🔵 Role-based navigation & access (`dev1/auth-roles`)
 - [ ] 🟣 Budgeting UI with progress bars (`dev2/budget`)
 - [ ] 🔵 Reminder creation form (`dev1/reminders`)
@@ -24,6 +25,7 @@ Use this board to track the progress of all tasks. Move tasks across columns by 
 
 - [ ] 🔵 JWT middleware & token verification (`dev1/auth-middleware`)
 - [ ] 🟣 Filter transactions by date/category/tag (`dev2/txn-filters`)
+- [ ] 🟢 Wallet CRUD API & UI (`owner/wallets`)
 
 ---
 

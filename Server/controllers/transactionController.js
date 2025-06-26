@@ -1,31 +1,30 @@
 
 const Transaction = require('../models/Transaction');
+const Budget = require('../models/Budget');
 
 // TEMP user ID for local testing
 const TEST_USER_ID = '665f8d3a1fcf84c66e65e91a';
 
-// @desc Get all transactions for test user
+// @desc Get all transactions for test user with wallet info
 const getTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find({ userId: TEST_USER_ID }).sort({ createdAt: -1 });
+    const transactions = await Transaction.find({ userId: TEST_USER_ID })
+      .populate({
+        path: 'walletId',
+        select: 'name type' // include wallet name and type
+      })
+      .sort({ createdAt: -1 });
+
     res.json(transactions);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Server Error' });
   }
 };
 
 // @desc Create new transaction
 const createTransaction = async (req, res) => {
-  const {
-    category,
-    amount,
-    type,
-    note,
-    date,
-    tags,
-    walletId
-  } = req.body;
-
+  const { category, amount, type, note, date, tags, walletId } = req.body;
   const fileUrl = req.file ? `uploads/${req.file.filename}` : null;
 
   try {
@@ -42,17 +41,47 @@ const createTransaction = async (req, res) => {
     });
 
     const saved = await transaction.save();
+
+    // Update budget if it's an expense
+    if (type === 'expense') {
+      const budget = await Budget.findOne({ walletId, category });
+      if (budget) {
+        budget.spent += amount;
+        await budget.save();
+      }
+    }
+
     res.status(201).json(saved);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: error.message });
   }
 };
 
 // @desc Update transaction
-
 const updateTransaction = async (req, res) => {
+  const transactionId = req.params.id;
+  const { category, amount, type, note, date, tags, walletId } = req.body;
+  const fileUrl = req.file ? `uploads/${req.file.filename}` : null;
+
   try {
-    const {
+    const existing = await Transaction.findOne({ _id: transactionId, userId: TEST_USER_ID });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+
+    // Rollback old budget if old type was expense
+    if (existing.type === 'expense') {
+      const oldBudget = await Budget.findOne({ walletId: existing.walletId, category: existing.category });
+      if (oldBudget) {
+        oldBudget.spent = Math.max(0, oldBudget.spent - existing.amount);
+        await oldBudget.save();
+      }
+    }
+
+    // Prepare updated fields
+    const updatedFields = {
       category,
       amount,
       type,
@@ -60,34 +89,30 @@ const updateTransaction = async (req, res) => {
       date,
       tags,
       walletId
-    } = req.body;
-
-    const updatedFields = {
-      category,
-      amount,
-      type,
-      note,
-      date,
-      walletId,
-      tags,
     };
 
-    if (req.file) {
-      updatedFields.fileUrl = `uploads/${req.file.filename}`;
+    if (fileUrl) {
+      updatedFields.fileUrl = fileUrl;
     }
 
-    const updated = await Transaction.findOneAndUpdate(
-      { _id: req.params.id, userId: TEST_USER_ID },
+    const updatedTransaction = await Transaction.findOneAndUpdate(
+      { _id: transactionId, userId: TEST_USER_ID },
       updatedFields,
       { new: true }
     );
 
-    if (!updated) {
-      return res.status(404).json({ message: 'Transaction not found' });
+    // Update new budget if new type is expense
+    if (updatedTransaction.type === 'expense') {
+      const newBudget = await Budget.findOne({ walletId: updatedTransaction.walletId, category: updatedTransaction.category });
+      if (newBudget) {
+        newBudget.spent += updatedTransaction.amount;
+        await newBudget.save();
+      }
     }
 
-    res.json(updated);
+    res.json(updatedTransaction);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: error.message });
   }
 };
@@ -104,8 +129,18 @@ const deleteTransaction = async (req, res) => {
       return res.status(404).json({ message: 'Transaction not found' });
     }
 
+    // Update budget if deleted transaction was an expense
+    if (deleted.type === 'expense') {
+      const budget = await Budget.findOne({ walletId: deleted.walletId, category: deleted.category });
+      if (budget) {
+        budget.spent = Math.max(0, budget.spent - deleted.amount);
+        await budget.save();
+      }
+    }
+
     res.json({ message: 'Transaction deleted' });
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: error.message });
   }
 };

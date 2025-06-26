@@ -7,6 +7,8 @@ const connectDB = require('./config/db');
 const app = express();
 app.use(cors());
 app.use(express.json());
+const cron=require('node-cron');
+const Reminder = require('./models/Reminder');
 
 
 
@@ -27,6 +29,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const budgetRoutes = require('./routes/budgetRoutes');
 app.use('/api/budgets', budgetRoutes);
 
+const reminderRoutes = require('./routes/reminderRoutes');
+app.use('/api/reminders', reminderRoutes);
+
 
 app.get('/', (req, res) => {
     res.send('VaultBooks Backend is running');
@@ -38,6 +43,7 @@ connectDB().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });
+  
 });
 
 
