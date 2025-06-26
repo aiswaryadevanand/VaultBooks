@@ -34,3 +34,4 @@ Use this board to track the progress of all tasks. Move tasks across columns by 
 - [x] 🟢 GitHub repo created & team added
 - [x] 🟢 `.gitignore`, `README.md`, `git-workflow.md`, `TEAM_PLAN.md` added
 - [x] 🟢 `.gitkeep` added to client/server folders
+- [x] 🟣 Transaction CRUD backend (`dev2/transactions`)
