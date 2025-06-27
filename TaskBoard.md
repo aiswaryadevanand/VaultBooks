@@ -8,8 +8,6 @@ Use this board to track the progress of all tasks. Move tasks across columns by 
 
 - [ ] 🟢 Project structure & folder setup (`owner/init-setup`)
 - [ ] 🔵 Register/Login API with JWT (`dev1/auth`)
-- [ ] 🟣 Transaction CRUD backend (`dev2/transactions`)
-
 - [ ] 🔵 Role-based navigation & access (`dev1/auth-roles`)
 - [ ] 🟣 Budgeting UI with progress bars (`dev2/budget`)
 - [ ] 🔵 Reminder creation form (`dev1/reminders`)
@@ -24,7 +22,7 @@ Use this board to track the progress of all tasks. Move tasks across columns by 
 ## 🔄 In Progress
 
 - [ ] 🔵 JWT middleware & token verification (`dev1/auth-middleware`)
-- [ ] 🟣 Filter transactions by date/category/tag (`dev2/txn-filters`)
+- [ ] 🟢  Recurring transaction logic (`dev2/transactions`)
 - [ ] 🟢 Wallet CRUD API & UI (`owner/wallets`)
 
 ---
@@ -35,3 +33,4 @@ Use this board to track the progress of all tasks. Move tasks across columns by 
 - [x] 🟢 `.gitignore`, `README.md`, `git-workflow.md`, `TEAM_PLAN.md` added
 - [x] 🟢 `.gitkeep` added to client/server folders
 - [x] 🟣 Transaction CRUD backend (`dev2/transactions`)
+- [x] 🟣 Filter transactions by date/category/tag (`dev2/txn-filters`)

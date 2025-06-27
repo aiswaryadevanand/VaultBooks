@@ -9,7 +9,7 @@ const transactionSchema = new mongoose.Schema({
   },
   walletId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Wallet', // 👈 Reference to Wallet model
+    ref: 'Wallet',
     required: true
   },
   type: {
@@ -38,12 +38,23 @@ const transactionSchema = new mongoose.Schema({
   date: {
     type: Date,
     required: true
+  },
+
+  // ✅ Recurring transaction fields
+  recurring: {
+    type: Boolean,
+    default: false
+  },
+  frequency: {
+    type: String,
+    enum: ['daily', 'weekly', 'monthly', 'yearly']
+  },
+  nextDate: {
+    type: Date
   }
+
 }, {
   timestamps: true
 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);
-
-
-

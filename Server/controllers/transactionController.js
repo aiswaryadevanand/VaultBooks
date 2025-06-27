@@ -2,6 +2,18 @@
 const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 
+// Helper to calculate next recurring date
+const calculateNextDate = (date, frequency) => {
+  const next = new Date(date);
+  switch (frequency) {
+    case 'daily': next.setDate(next.getDate() + 1); break;
+    case 'weekly': next.setDate(next.getDate() + 7); break;
+    case 'monthly': next.setMonth(next.getMonth() + 1); break;
+    case 'yearly': next.setFullYear(next.getFullYear() + 1); break;
+  }
+  return next;
+};
+
 // @desc Get all transactions for logged-in user
 const getTransactions = async (req, res) => {
   try {
@@ -21,10 +33,22 @@ const getTransactions = async (req, res) => {
 // @desc Create new transaction
 const createTransaction = async (req, res) => {
   const userId = req.user.userId;
-  const { category, amount, type, note, date, tags, walletId } = req.body;
+  const {
+    category,
+    amount,
+    type,
+    note,
+    date,
+    tags,
+    walletId,
+    recurring,
+    frequency
+  } = req.body;
   const fileUrl = req.file ? `uploads/${req.file.filename}` : null;
 
   try {
+    const nextDate = recurring && frequency ? calculateNextDate(date, frequency) : null;
+
     const transaction = new Transaction({
       userId,
       walletId,
@@ -34,7 +58,10 @@ const createTransaction = async (req, res) => {
       note,
       date,
       tags,
-      fileUrl
+      fileUrl,
+      recurring,
+      frequency,
+      nextDate
     });
 
     const saved = await transaction.save();
@@ -59,7 +86,17 @@ const createTransaction = async (req, res) => {
 const updateTransaction = async (req, res) => {
   const userId = req.user.userId;
   const transactionId = req.params.id;
-  const { category, amount, type, note, date, tags, walletId } = req.body;
+  const {
+    category,
+    amount,
+    type,
+    note,
+    date,
+    tags,
+    walletId,
+    recurring,
+    frequency
+  } = req.body;
   const fileUrl = req.file ? `uploads/${req.file.filename}` : null;
 
   try {
@@ -78,7 +115,20 @@ const updateTransaction = async (req, res) => {
       }
     }
 
-    const updatedFields = { category, amount, type, note, date, tags, walletId };
+    const nextDate = recurring && frequency ? calculateNextDate(date, frequency) : null;
+
+    const updatedFields = {
+      category,
+      amount,
+      type,
+      note,
+      date,
+      tags,
+      walletId,
+      recurring,
+      frequency,
+      nextDate
+    };
     if (fileUrl) updatedFields.fileUrl = fileUrl;
 
     const updatedTransaction = await Transaction.findOneAndUpdate(
