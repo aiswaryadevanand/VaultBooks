@@ -1,7 +1,7 @@
 
 import React,{useEffect} from 'react';
 import { loadStoredCredentials } from './redux/slices/authSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Register from './pages/Register';
 import Login from './pages/Login';
@@ -18,10 +18,14 @@ import Reminder from './pages/Reminder';
 function App() {
 
   const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.token); // ✅ Add this line
 
+  // useEffect(() => {
+  //   dispatch(loadStoredCredentials()); // ✅ load token and user at startup
+  // }, [dispatch]);
   useEffect(() => {
-    dispatch(loadStoredCredentials()); // ✅ load token and user at startup
-  }, [dispatch]);
+    dispatch(loadStoredCredentials()); // <-- run on every mount or login
+  }, [dispatch, token]); // ✅ react when token changes
 
   return (
     <Router>

@@ -3,7 +3,17 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const transactionApi = createApi({
   reducerPath: 'transactionApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:5000/api' }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: 'http://localhost:5000/api',
+    prepareHeaders: (headers, { getState }) => {
+      // ✅ Fix: token is directly inside auth, not in auth.user
+      const token = getState().auth?.token;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
   tagTypes: ['Transaction'],
   endpoints: (builder) => ({
     getTransactions: builder.query({
@@ -23,7 +33,6 @@ export const transactionApi = createApi({
         url: `/transactions/${id}`,
         method: 'PUT',
         body: formData,
-        formData: true,
       }),
       invalidatesTags: ['Transaction'],
     }),
