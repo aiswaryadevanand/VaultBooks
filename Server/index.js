@@ -43,7 +43,43 @@ connectDB().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });
-  
+  cron.schedule('0 9 * * *', async () => {
+    console.log('Running daily reminder check at 9 AM');
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0); // Set to start of the day
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999); //
+
+    console.log(`Checking reminders due between ${startOfToday} and ${endOfToday}`);
+    try{
+
+        // const today = new Date();
+        // today.setHours(0, 0, 0, 0); // Set to start of the day
+
+        const dueReminders = await Reminder.find({
+            status: {$ne: 'done'},
+            dueDate: {
+                $gte: startOfToday,
+                $lte: endOfToday
+            }
+        })
+        if (dueReminders.length > 0) {
+            console.log(` ${dueReminders.length} reminder(s) due today or earlier`);
+            // Here you can implement your notification logic
+            // For example, send emails or push notifications
+            dueReminders.forEach(reminder => {
+                console.log(` Reminder: "${reminder.description}" is due on ${reminder.dueDate.toDateString()}`);
+                // Implement your notification logic here
+            });
+        } else {
+            console.log('No reminders due today');
+        }
+    }catch (error) {
+        console.error('Error checking reminders:', error.message);
+    }
+});
 });
 
 
