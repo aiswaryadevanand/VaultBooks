@@ -7,10 +7,11 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedTransaction } from '../../redux/slices/transactionSlice';
 import { fetchWallets } from '../../redux/slices/walletSlice';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const TransactionList = () => {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.user); // ✅ current user
+  const user = useSelector((state) => state.auth.user);
   const wallets = useSelector((state) => state.wallets.wallets || []);
   const [deleteTransaction] = useDeleteTransactionMutation();
 
@@ -18,17 +19,15 @@ const TransactionList = () => {
     data: transactions = [],
     isLoading,
     isError,
-    refetch, // ✅ refetch to update list on login/logout
+    refetch,
   } = useGetTransactionsQuery();
 
-  // 🔁 Fetch wallets on mount
   useEffect(() => {
     if (wallets.length === 0) {
       dispatch(fetchWallets());
     }
   }, [dispatch, wallets.length]);
 
-  // 🔁 Refetch transactions when user changes
   useEffect(() => {
     if (user) {
       refetch();
@@ -57,7 +56,6 @@ const TransactionList = () => {
     const matchesTag =
       !filters.tags ||
       (tx.tags && tx.tags.some((tag) => tag.toLowerCase().includes(filters.tags.toLowerCase())));
-
     return matchesCategory && matchesWallet && matchesDate && matchesTag;
   });
 
@@ -126,6 +124,8 @@ const TransactionList = () => {
               <th className="py-2 px-3">Date</th>
               <th className="py-2 px-3">Wallet</th>
               <th className="py-2 px-3">Tags</th>
+              <th className="py-2 px-3">Recurring</th>
+              <th className="py-2 px-3">Frequency</th>
               <th className="py-2 px-3">File</th>
               <th className="py-2 px-3">Actions</th>
             </tr>
@@ -147,6 +147,16 @@ const TransactionList = () => {
                       {tag}
                     </span>
                   ))}
+                </td>
+                <td className="py-2 px-3 text-lg">
+                  {tx.recurring ? (
+                    <FaCheckCircle className="text-green-600" />
+                  ) : (
+                    <FaTimesCircle className="text-red-600" />
+                  )}
+                </td>
+                <td className="py-2 px-3">
+                  {tx.recurring ? tx.frequency || '—' : '—'}
                 </td>
                 <td className="py-2 px-3">
                   {tx.fileUrl ? (
@@ -188,4 +198,3 @@ const TransactionList = () => {
 };
 
 export default TransactionList;
-

@@ -1,5 +1,5 @@
 
-
+// // TransactionForm.jsx
 // import React, { useState, useEffect, useRef } from 'react';
 // import {
 //   useAddTransactionMutation,
@@ -28,6 +28,8 @@
 //     walletId: '',
 //     tags: '',
 //     file: null,
+//     recurring: false,
+//     frequency: '',
 //   });
 
 //   useEffect(() => {
@@ -42,20 +44,26 @@
 //         type: selected.type || 'expense',
 //         description: selected.note || '',
 //         date: selected.date ? selected.date.substring(0, 10) : '',
-//         walletId: selected.walletId || '',
+//         walletId: selected.walletId?._id || selected.walletId || '',
 //         tags: selected.tags ? selected.tags.join(', ') : '',
 //         file: null,
+//         recurring: selected.recurring || false,
+//         frequency: selected.frequency || '',
 //       });
-//       setFilePreview(selected.fileUrl ? `http://localhost:5000/${selected.fileUrl}` : null);
+//       setFilePreview(
+//         selected.fileUrl ? `http://localhost:5000/${selected.fileUrl}` : null
+//       );
 //     }
 //   }, [selected]);
 
 //   const handleChange = (e) => {
-//     const { name, value, files } = e.target;
+//     const { name, value, files, type, checked } = e.target;
 //     if (name === 'file') {
 //       const file = files[0];
 //       setForm({ ...form, file });
 //       setFilePreview(URL.createObjectURL(file));
+//     } else if (type === 'checkbox') {
+//       setForm({ ...form, [name]: checked });
 //     } else {
 //       setForm({ ...form, [name]: value });
 //     }
@@ -71,6 +79,8 @@
 //     formData.append('date', form.date);
 //     formData.append('walletId', form.walletId);
 //     formData.append('tags', form.tags);
+//     formData.append('recurring', form.recurring);
+//     formData.append('frequency', form.recurring ? form.frequency : '');
 //     if (form.file) formData.append('file', form.file);
 
 //     try {
@@ -89,6 +99,8 @@
 //         walletId: '',
 //         tags: '',
 //         file: null,
+//         recurring: false,
+//         frequency: '',
 //       });
 //       setFilePreview(null);
 //       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -98,43 +110,144 @@
 //   };
 
 //   return (
-//     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded shadow bg-white">
-//       <input name="category" placeholder="Category" value={form.category} onChange={handleChange} className="border p-2 rounded" required />
-//       <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} className="border p-2 rounded" required />
-
-//       <select name="type" value={form.type} onChange={handleChange} className="border p-2 rounded">
+//     <form
+//       onSubmit={handleSubmit}
+//       className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded shadow bg-white"
+//     >
+//       <input
+//         name="category"
+//         placeholder="Category"
+//         value={form.category}
+//         onChange={handleChange}
+//         className="border p-2 rounded"
+//         required
+//       />
+//       <input
+//         type="number"
+//         name="amount"
+//         placeholder="Amount"
+//         value={form.amount}
+//         onChange={handleChange}
+//         className="border p-2 rounded"
+//         required
+//       />
+//       <select
+//         name="type"
+//         value={form.type}
+//         onChange={handleChange}
+//         className="border p-2 rounded"
+//       >
 //         <option value="income">Income</option>
 //         <option value="expense">Expense</option>
 //         <option value="transfer">Transfer</option>
 //       </select>
-
-//       <input name="description" placeholder="Description" value={form.description} onChange={handleChange} className="border p-2 rounded" />
-//       <input type="date" name="date" value={form.date} onChange={handleChange} className="border p-2 rounded" />
-
-//       <select name="walletId" value={form.walletId} onChange={handleChange} className="border p-2 rounded" required>
+//       <input
+//         name="description"
+//         placeholder="Description"
+//         value={form.description}
+//         onChange={handleChange}
+//         className="border p-2 rounded"
+//       />
+//       <input
+//         type="date"
+//         name="date"
+//         value={form.date}
+//         onChange={handleChange}
+//         className="border p-2 rounded"
+//       />
+//       <select
+//         name="walletId"
+//         value={form.walletId}
+//         onChange={handleChange}
+//         className="border p-2 rounded"
+//         required
+//       >
 //         <option value="">Select Wallet</option>
 //         {wallets.map((wallet) => (
-//           <option key={wallet._id} value={wallet._id}>{wallet.name}</option>
+//           <option key={wallet._id} value={wallet._id}>
+//             {wallet.name}
+//           </option>
 //         ))}
 //       </select>
-
-//       <input name="tags" placeholder="Tags (comma separated)" value={form.tags} onChange={handleChange} className="border p-2 rounded" />
+//       <input
+//         name="tags"
+//         placeholder="Tags (comma separated)"
+//         value={form.tags}
+//         onChange={handleChange}
+//         className="border p-2 rounded"
+//       />
 
 //       <div>
-//         <input type="file" name="file" onChange={handleChange} className="border p-2 rounded w-full" ref={fileInputRef} />
+//         <input
+//           type="file"
+//           name="file"
+//           onChange={handleChange}
+//           className="border p-2 rounded w-full"
+//           ref={fileInputRef}
+//         />
 //         {filePreview && (
 //           <div className="mt-2">
-//             {form.file?.type?.startsWith('image') ? (
-//               <img src={filePreview} alt="Preview" className="h-32 object-cover rounded" />
+//             {form.file ? (
+//               form.file.type?.startsWith('image') ? (
+//                 <img
+//                   src={filePreview}
+//                   alt="Preview"
+//                   className="h-32 object-cover rounded"
+//                 />
+//               ) : (
+//                 <a
+//                   href={filePreview}
+//                   target="_blank"
+//                   rel="noopener noreferrer"
+//                   className="text-blue-600"
+//                 >
+//                   Preview File
+//                 </a>
+//               )
 //             ) : (
-//               <a href={filePreview} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Preview File</a>
+//               <img
+//                 src={filePreview}
+//                 alt="Existing File"
+//                 className="h-32 object-cover rounded"
+//               />
 //             )}
 //           </div>
 //         )}
 //       </div>
 
+//       {/* ✅ Recurring Options */}
+//       <div className="md:col-span-2">
+//         <label className="flex items-center gap-2 mb-2">
+//           <input
+//             type="checkbox"
+//             name="recurring"
+//             checked={form.recurring}
+//             onChange={handleChange}
+//           />
+//           Recurring Transaction
+//         </label>
+
+//         {form.recurring && (
+//           <select
+//             name="frequency"
+//             value={form.frequency}
+//             onChange={handleChange}
+//             className="border p-2 rounded w-full"
+//           >
+//             <option value="">Select Frequency</option>
+//             <option value="daily">Daily</option>
+//             <option value="weekly">Weekly</option>
+//             <option value="monthly">Monthly</option>
+//             <option value="yearly">Yearly</option>
+//           </select>
+//         )}
+//       </div>
+
 //       <div className="md:col-span-2 text-right">
-//         <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+//         <button
+//           type="submit"
+//           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+//         >
 //           {selected ? 'Update' : 'Add'} Transaction
 //         </button>
 //       </div>
@@ -145,7 +258,6 @@
 // export default TransactionForm;
 
 
-// TransactionForm.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import {
   useAddTransactionMutation,
@@ -174,6 +286,8 @@ const TransactionForm = () => {
     walletId: '',
     tags: '',
     file: null,
+    recurring: false,
+    frequency: '',
   });
 
   useEffect(() => {
@@ -191,6 +305,8 @@ const TransactionForm = () => {
         walletId: selected.walletId?._id || selected.walletId || '',
         tags: selected.tags ? selected.tags.join(', ') : '',
         file: null,
+        recurring: selected.recurring || false,
+        frequency: selected.frequency || '',
       });
       setFilePreview(
         selected.fileUrl ? `http://localhost:5000/${selected.fileUrl}` : null
@@ -199,11 +315,13 @@ const TransactionForm = () => {
   }, [selected]);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value, files, type, checked } = e.target;
     if (name === 'file') {
       const file = files[0];
       setForm({ ...form, file });
       setFilePreview(URL.createObjectURL(file));
+    } else if (type === 'checkbox') {
+      setForm({ ...form, [name]: checked });
     } else {
       setForm({ ...form, [name]: value });
     }
@@ -219,7 +337,15 @@ const TransactionForm = () => {
     formData.append('date', form.date);
     formData.append('walletId', form.walletId);
     formData.append('tags', form.tags);
-    if (form.file) formData.append('file', form.file);
+    formData.append('recurring', form.recurring ? 'true' : 'false');
+
+    if (form.recurring && form.frequency) {
+      formData.append('frequency', form.frequency);
+    }
+
+    if (form.file) {
+      formData.append('file', form.file);
+    }
 
     try {
       if (selected) {
@@ -227,6 +353,7 @@ const TransactionForm = () => {
       } else {
         await addTransaction(formData).unwrap();
       }
+
       dispatch(clearSelectedTransaction());
       setForm({
         category: '',
@@ -237,6 +364,8 @@ const TransactionForm = () => {
         walletId: '',
         tags: '',
         file: null,
+        recurring: false,
+        frequency: '',
       });
       setFilePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -267,7 +396,6 @@ const TransactionForm = () => {
         className="border p-2 rounded"
         required
       />
-
       <select
         name="type"
         value={form.type}
@@ -278,7 +406,6 @@ const TransactionForm = () => {
         <option value="expense">Expense</option>
         <option value="transfer">Transfer</option>
       </select>
-
       <input
         name="description"
         placeholder="Description"
@@ -293,7 +420,6 @@ const TransactionForm = () => {
         onChange={handleChange}
         className="border p-2 rounded"
       />
-
       <select
         name="walletId"
         value={form.walletId}
@@ -308,7 +434,6 @@ const TransactionForm = () => {
           </option>
         ))}
       </select>
-
       <input
         name="tags"
         placeholder="Tags (comma separated)"
@@ -352,6 +477,35 @@ const TransactionForm = () => {
               />
             )}
           </div>
+        )}
+      </div>
+
+      {/* ✅ Recurring Options */}
+      <div className="md:col-span-2">
+        <label className="flex items-center gap-2 mb-2">
+          <input
+            type="checkbox"
+            name="recurring"
+            checked={form.recurring}
+            onChange={handleChange}
+          />
+          Recurring Transaction
+        </label>
+
+        {form.recurring && (
+          <select
+            name="frequency"
+            value={form.frequency}
+            onChange={handleChange}
+            className="border p-2 rounded w-full"
+            required
+          >
+            <option value="">Select Frequency</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
         )}
       </div>
 
