@@ -2,17 +2,13 @@
 const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 
-// TEMP user ID for local testing
-const TEST_USER_ID = '665f8d3a1fcf84c66e65e91a';
-
-// @desc Get all transactions for test user with wallet info
+// @desc Get all transactions for logged-in user
 const getTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find({ userId: TEST_USER_ID })
-      .populate({
-        path: 'walletId',
-        select: 'name type' // include wallet name and type
-      })
+    const userId = req.user.userId;
+
+    const transactions = await Transaction.find({ userId })
+      .populate({ path: 'walletId', select: 'name type' })
       .sort({ createdAt: -1 });
 
     res.json(transactions);
@@ -24,12 +20,13 @@ const getTransactions = async (req, res) => {
 
 // @desc Create new transaction
 const createTransaction = async (req, res) => {
+  const userId = req.user.userId;
   const { category, amount, type, note, date, tags, walletId } = req.body;
   const fileUrl = req.file ? `uploads/${req.file.filename}` : null;
 
   try {
     const transaction = new Transaction({
-      userId: TEST_USER_ID,
+      userId,
       walletId,
       type,
       category,
@@ -44,7 +41,7 @@ const createTransaction = async (req, res) => {
 
     // Update budget if it's an expense
     if (type === 'expense') {
-      const budget = await Budget.findOne({ walletId, category });
+      const budget = await Budget.findOne({ walletId, category, userId });
       if (budget) {
         budget.spent += amount;
         await budget.save();
@@ -60,50 +57,39 @@ const createTransaction = async (req, res) => {
 
 // @desc Update transaction
 const updateTransaction = async (req, res) => {
+  const userId = req.user.userId;
   const transactionId = req.params.id;
   const { category, amount, type, note, date, tags, walletId } = req.body;
   const fileUrl = req.file ? `uploads/${req.file.filename}` : null;
 
   try {
-    const existing = await Transaction.findOne({ _id: transactionId, userId: TEST_USER_ID });
+    const existing = await Transaction.findOne({ _id: transactionId, userId });
 
     if (!existing) {
       return res.status(404).json({ message: 'Transaction not found' });
     }
 
-    // Rollback old budget if old type was expense
+    // Rollback budget
     if (existing.type === 'expense') {
-      const oldBudget = await Budget.findOne({ walletId: existing.walletId, category: existing.category });
+      const oldBudget = await Budget.findOne({ walletId: existing.walletId, category: existing.category, userId });
       if (oldBudget) {
         oldBudget.spent = Math.max(0, oldBudget.spent - existing.amount);
         await oldBudget.save();
       }
     }
 
-    // Prepare updated fields
-    const updatedFields = {
-      category,
-      amount,
-      type,
-      note,
-      date,
-      tags,
-      walletId
-    };
-
-    if (fileUrl) {
-      updatedFields.fileUrl = fileUrl;
-    }
+    const updatedFields = { category, amount, type, note, date, tags, walletId };
+    if (fileUrl) updatedFields.fileUrl = fileUrl;
 
     const updatedTransaction = await Transaction.findOneAndUpdate(
-      { _id: transactionId, userId: TEST_USER_ID },
+      { _id: transactionId, userId },
       updatedFields,
       { new: true }
     );
 
-    // Update new budget if new type is expense
+    // Update budget
     if (updatedTransaction.type === 'expense') {
-      const newBudget = await Budget.findOne({ walletId: updatedTransaction.walletId, category: updatedTransaction.category });
+      const newBudget = await Budget.findOne({ walletId: updatedTransaction.walletId, category: updatedTransaction.category, userId });
       if (newBudget) {
         newBudget.spent += updatedTransaction.amount;
         await newBudget.save();
@@ -119,19 +105,20 @@ const updateTransaction = async (req, res) => {
 
 // @desc Delete transaction
 const deleteTransaction = async (req, res) => {
+  const userId = req.user.userId;
   try {
     const deleted = await Transaction.findOneAndDelete({
       _id: req.params.id,
-      userId: TEST_USER_ID
+      userId
     });
 
     if (!deleted) {
       return res.status(404).json({ message: 'Transaction not found' });
     }
 
-    // Update budget if deleted transaction was an expense
+    // Rollback budget
     if (deleted.type === 'expense') {
-      const budget = await Budget.findOne({ walletId: deleted.walletId, category: deleted.category });
+      const budget = await Budget.findOne({ walletId: deleted.walletId, category: deleted.category, userId });
       if (budget) {
         budget.spent = Math.max(0, budget.spent - deleted.amount);
         await budget.save();

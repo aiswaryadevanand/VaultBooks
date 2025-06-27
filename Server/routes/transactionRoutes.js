@@ -7,23 +7,19 @@ const {
   deleteTransaction,
 } = require('../controllers/transactionController');
 
-// const { protect } = require('../middlewares/authMiddleware'); // Dev 1 responsibility
-const upload = require('../middlewares/uploadMiddleware'); // ✅ required for file upload
+const authMiddleware = require('../middlewares/authMiddleware');
+const upload = require('../middlewares/uploadMiddleware');
 
 const router = express.Router();
 
 // /api/transactions
 router.route('/')
-  // .get(protect, getTransactions)
-  // .post(protect, upload.single('file'), createTransaction);
-  .get(getTransactions)
-  .post(upload.single('file'), createTransaction); // ✅ Add upload middleware
+  .get(authMiddleware, getTransactions)
+  .post(authMiddleware, upload.single('file'), createTransaction);
 
 // /api/transactions/:id
 router.route('/:id')
-  // .put(protect, updateTransaction)
-  // .delete(protect, deleteTransaction);
-  .put(upload.single('file'), updateTransaction) // ✅ also handle file upload on update
-  .delete(deleteTransaction);
+  .put(authMiddleware, upload.single('file'), updateTransaction)
+  .delete(authMiddleware, deleteTransaction);
 
 module.exports = router;
