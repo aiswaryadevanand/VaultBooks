@@ -73,12 +73,7 @@ const Budget = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <button
-        onClick={() => navigate('/dashboard/wallets')}
-        className="mb-4 bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition"
-      >
-        ← Back to Wallets
-      </button>
+      
 
       <h2 className="text-2xl font-bold mb-4 text-center">💰 Budget Tracker</h2>
 

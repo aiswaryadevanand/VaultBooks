@@ -1,26 +1,32 @@
 
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch,useSelector } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
+
 import {
   FaTachometerAlt, FaWallet, FaExchangeAlt, 
-  FaFileAlt, FaScroll, FaUsers, FaSignOutAlt
+  FaFileAlt, FaScroll, FaUsers, FaSignOutAlt,FaChartPie, FaBell
 } from 'react-icons/fa';
 
 const DashboardLayout = () => {
+  const { selectedWallet } = useSelector((state) => state.wallets);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const navItems = [
-    { label: 'Dashboard', icon: <FaTachometerAlt />, path: '/dashboard' },
-    { label: 'Wallets', icon: <FaWallet />, path: '/dashboard/wallets' },
-    { label: 'Transactions', icon: <FaExchangeAlt />, path: '/dashboard/transactions' },
-    // { label: 'Budgets', icon: <FaChartPie />, path: '/dashboard/budgets' },
-    { label: 'Reports', icon: <FaFileAlt />, path: '/dashboard/reports' },
-    { label: 'Audit Logs', icon: <FaScroll />, path: '/dashboard/audit-logs' },
-    { label: 'Team', icon: <FaUsers />, path: '/dashboard/team' }
-  ];
+  const walletId = selectedWallet?._id;
+
+const navItems = walletId ? [
+  { label: 'Dashboard', icon: <FaTachometerAlt />, path: `/wallets/${walletId}/dashboard` },
+  { label: 'Transactions', icon: <FaExchangeAlt />, path: `/wallets/${walletId}/transactions` },
+  { label: 'Budgets', icon: <FaChartPie />, path: `/wallets/${walletId}/budgets` },
+  { label: 'Reminders', icon: <FaBell />, path: `/wallets/${walletId}/reminders` },
+  { label: 'Reports', icon: <FaFileAlt />, path: `/wallets/${walletId}/reports` },
+  { label: 'Audit Logs', icon: <FaScroll />, path: `/wallets/${walletId}/audit-logs` },
+  { label: 'Team', icon: <FaUsers />, path: `/wallets/${walletId}/team` }
+] : [];
+
 
   const handleLogout = () => {
     dispatch(logout());

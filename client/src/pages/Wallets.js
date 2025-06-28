@@ -1,24 +1,20 @@
-
-
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-
 import {
   fetchWallets,
   createWallet,
   updateWallet,
   deleteWallet,
-  setSelectedWallet
 } from "../redux/slices/walletSlice";
+import { logout } from "../redux/slices/authSlice";
 
 const Wallets = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { wallets, status, error } = useSelector((state) => state.wallets);
-  const { token } = useSelector((state) => state.auth); // ✅ added to check auth token
+  const { token } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({ name: "", type: "personal" });
   const [editId, setEditId] = useState(null);
@@ -28,7 +24,7 @@ const Wallets = () => {
     if (token) {
       dispatch(fetchWallets());
     }
-  }, [dispatch, token]); // ✅ only fetch if token is available
+  }, [dispatch, token]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -54,15 +50,32 @@ const Wallets = () => {
     }
   };
 
-  const goToBudgets = (wallet) => {
-    dispatch(setSelectedWallet(wallet));
-    navigate(`/dashboard/wallets/${wallet._id}/budgets`);
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
   };
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <h2 className="text-2xl font-bold text-center mb-6">💼 Wallets</h2>
+      {/* Top Bar */}
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={() => navigate("/wallets-list")}
+          className="text-blue-600 hover:underline"
+        >
+          ← Back to Wallets
+        </button>
+        <button
+          onClick={handleLogout}
+          className="text-red-600 hover:underline"
+        >
+          Logout
+        </button>
+      </div>
 
+      <h2 className="text-2xl font-bold text-center mb-6">💼 Manage Wallets</h2>
+
+      {/* Create Wallet Form */}
       <form
         onSubmit={handleCreate}
         className="flex flex-col md:flex-row items-center gap-4 bg-white shadow p-4 rounded-md mb-6"
@@ -104,8 +117,7 @@ const Wallets = () => {
         {wallets.map((wallet) => (
           <div
             key={wallet._id}
-            onClick={() => editId !== wallet._id && goToBudgets(wallet)}
-            className="bg-gray-100 p-4 rounded shadow-sm flex justify-between items-center cursor-pointer hover:bg-gray-200"
+            className="bg-gray-100 p-4 rounded shadow-sm flex justify-between items-center"
           >
             {editId === wallet._id ? (
               <div className="flex flex-col md:flex-row items-center gap-2 w-full">
@@ -162,15 +174,6 @@ const Wallets = () => {
                     className="text-sm text-red-600 hover:underline"
                   >
                     Delete
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent triggering wallet click
-                      navigate(`/wallets/${wallet._id}/reminders`);
-                    }}
-                    className="text-sm text-purple-600 hover:underline"
-                  >
-                    🔔 Reminders
                   </button>
                 </div>
               </>
