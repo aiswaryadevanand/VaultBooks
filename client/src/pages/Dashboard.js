@@ -73,8 +73,22 @@ const DashboardLayout = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-6 md:p-8 bg-gray-100 overflow-auto">
-        <Outlet />
-      </div>
+  {walletId && (
+    <div className="flex justify-between items-center mb-6">
+      <h2 className="text-2xl font-bold text-gray-800">
+        💼 {selectedWallet.name}
+      </h2>
+      {/* Optional: Add an Invite button */}
+      <button
+        onClick={() => navigate(`/wallets/${walletId}/team/invite`)}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+      >
+        + Invite
+      </button>
+    </div>
+  )}
+  <Outlet />
+</div>
     </div>
   );
 };
