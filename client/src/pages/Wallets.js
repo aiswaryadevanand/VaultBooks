@@ -1,200 +1,52 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  fetchWallets,
-  createWallet,
-  updateWallet,
-  deleteWallet,
-} from "../redux/slices/walletSlice";
-import { logout } from "../redux/slices/authSlice";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
-const Wallets = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const { wallets, status, error } = useSelector((state) => state.wallets);
+const Team = () => {
+  const { walletId } = useParams();
   const { token } = useSelector((state) => state.auth);
-
-  const [formData, setFormData] = useState({ name: "", type: "personal" });
-  const [editId, setEditId] = useState(null);
-  const [editData, setEditData] = useState({ name: "", type: "personal" });
+  const [team, setTeam] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (token) {
-      dispatch(fetchWallets());
-    }
-  }, [dispatch, token]);
-
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    if (!formData.name.trim()) return;
-    await dispatch(createWallet(formData));
-    setFormData({ name: "", type: "personal" });
-  };
-
-  const handleEdit = (wallet) => {
-    setEditId(wallet._id);
-    setEditData({ name: wallet.name, type: wallet.type });
-  };
-
-  const handleUpdate = async (id) => {
-    if (!editData.name.trim()) return;
-    await dispatch(updateWallet({ id, ...editData }));
-    setEditId(null);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this wallet?")) {
-      await dispatch(deleteWallet(id));
-    }
-  };
-
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/login");
-  };
+    const fetchTeam = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:5000/api/wallets/${walletId}/team`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setTeam(res.data);
+      } catch (err) {
+        setError(err.response?.data?.error || "Failed to load team");
+      }
+    };
+    fetchTeam();
+  }, [walletId, token]);
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      {/* Top Bar */}
-      <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={() => navigate("/wallets-list")}
-          className="text-blue-600 hover:underline"
-        >
-          ← Back to Wallets
-        </button>
-        <button
-          onClick={handleLogout}
-          className="text-red-600 hover:underline"
-        >
-          Logout
-        </button>
-      </div>
+    <div className="max-w-2xl mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">👥 Team Members</h2>
+      {error && <p className="text-red-500">{error}</p>}
 
-      {/* Page Heading */}
-      <h1 className="text-3xl font-bold text-center text-blue-700 mb-4">
-        VaultBooks
-      </h1>
-      <h2 className="text-xl text-center font-semibold mb-6">💼 Manage Wallets</h2>
-
-      {/* Create Wallet Form */}
-      <form
-        onSubmit={handleCreate}
-        className="flex flex-col md:flex-row items-center gap-4 bg-white shadow p-4 rounded-md mb-6"
-      >
-        <input
-          type="text"
-          placeholder="Wallet Name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          required
-          className="border border-gray-300 rounded px-3 py-2 w-full md:w-1/2"
-        />
-        <select
-          value={formData.type}
-          onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-          className="border border-gray-300 rounded px-3 py-2 w-full md:w-1/4"
-        >
-          <option value="personal">Personal</option>
-          <option value="business">Business</option>
-        </select>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-        >
-          Add
-        </button>
-      </form>
-
-      {/* Status and error messages */}
-      {status === "loading" && (
-        <p className="text-center text-sm text-gray-500 mb-4">
-          Loading wallets...
-        </p>
-      )}
-      {error && (
-        <p className="text-center text-red-500 text-sm mb-4">Error: {error}</p>
-      )}
-
-      {/* Wallet List */}
-      {wallets.length > 0 ? (
-        <div className="space-y-3">
-          {wallets.map((wallet) => (
-            <div
-              key={wallet._id}
-              className="bg-gray-100 p-4 rounded shadow-sm flex justify-between items-center"
-            >
-              {editId === wallet._id ? (
-                <div className="flex flex-col md:flex-row items-center gap-2 w-full">
-                  <input
-                    type="text"
-                    value={editData.name}
-                    onChange={(e) =>
-                      setEditData({ ...editData, name: e.target.value })
-                    }
-                    className="border border-gray-300 rounded px-3 py-2 w-full md:w-1/2"
-                  />
-                  <select
-                    value={editData.type}
-                    onChange={(e) =>
-                      setEditData({ ...editData, type: e.target.value })
-                    }
-                    className="border border-gray-300 rounded px-3 py-2 w-full md:w-1/4"
-                  >
-                    <option value="personal">Personal</option>
-                    <option value="business">Business</option>
-                  </select>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleUpdate(wallet._id)}
-                      className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setEditId(null)}
-                      className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400 transition"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div>
-                    <h4 className="font-semibold">{wallet.name}</h4>
-                    <p className="text-sm text-gray-600 capitalize">
-                      {wallet.type}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(wallet)}
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(wallet._id)}
-                      className="text-sm text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
+      {team.length === 0 ? (
+        <p className="text-gray-500">No members yet.</p>
       ) : (
-        status === "succeeded" && (
-          <p className="text-center text-gray-600 mt-10">No wallets found.</p>
-        )
+        <ul className="divide-y divide-gray-300">
+          {team.map((member) => (
+            <li key={member._id} className="py-2">
+              <p className="font-medium">{member.username} ({member.email})</p>
+              <p className="text-sm text-gray-600">Role: {member.role}</p>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
 };
 
-export default Wallets;
+export default Team;

@@ -20,7 +20,7 @@ setError("");
 
 try {
   const res = await axios.post(
-    `http://loacalhost:5000/api/wallets/${walletId}/invite`,
+    `http://localhost:5000/api/wallets/${walletId}/invite`,
     { email, role },
     {
       headers: {
