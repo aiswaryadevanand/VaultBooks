@@ -22,7 +22,7 @@ const WalletListPage = () => {
 
   const goToDashboard = (wallet) => {
     dispatch(setSelectedWallet(wallet));
-    navigate(`/wallets/${wallet._id}/dashboard`);
+    navigate(`/wallets/${wallet._id}`);
   };
 
   const getUserRole = (wallet) => {
@@ -46,19 +46,23 @@ const WalletListPage = () => {
     <div className="max-w-3xl mx-auto p-6">
       {/* Top bar with avatar and logout */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">💼 Your Wallets</h2>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold">
-            {getInitial()}
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-red-600 hover:underline"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
+  <div>
+    <h1 className="text-3xl font-extrabold text-blue-700">VaultBooks</h1>
+    <p className="text-sm text-gray-500">Select a wallet to manage your finances</p>
+  </div>
+  <div className="flex items-center gap-3">
+    <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold">
+      {getInitial()}
+    </div>
+    <button
+      onClick={handleLogout}
+      className="text-sm text-red-600 hover:underline"
+    >
+      Logout
+    </button>
+  </div>
+</div>
+
 
      {/* Create wallet button — only show when wallets exist */}
 {!!wallets.length && (
