@@ -16,10 +16,12 @@ export const transactionApi = createApi({
   }),
   tagTypes: ['Transaction'],
   endpoints: (builder) => ({
+
     getTransactions: builder.query({
-      query: () => '/transactions',
-      providesTags: ['Transaction'],
-    }),
+  query: (walletId) => `/transactions?walletId=${walletId}`,
+  providesTags: ['Transaction'],
+}),
+
     addTransaction: builder.mutation({
       query: (formData) => ({
         url: '/transactions',
