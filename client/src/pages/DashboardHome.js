@@ -45,12 +45,7 @@ const DashboardHome = () => {
     <div className="p-4 space-y-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">📊 Dashboard Overview</h2>
-        <button
-          onClick={goToInvitePage}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-        >
-          + Invite
-        </button>
+       
       </div>
 
       {/* Budgets */}

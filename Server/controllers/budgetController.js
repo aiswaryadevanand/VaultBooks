@@ -1,106 +1,114 @@
-const Budget= require('../models/Budget');
+const Budget = require('../models/Budget');
 const Wallet = require('../models/Wallet');
 
 const isAuthorizedForWallet = (wallet, userId) => {
-  return wallet.createdBy.equals(userId) || wallet.members.some(m => m.toString()===userId.toString());
-}
-console.log("🚨 createBudget called!");
+const userIdStr = userId.toString();
+return (
+wallet.createdBy.toString() === userIdStr ||
+wallet.members.some((m) => m.userId.toString() === userIdStr)
+);
+};
+
 exports.createBudget = async (req, res) => {
-  try {
-    const { walletId, category, limit } = req.body;
-    const userId=req.user.userId
+  console.log("🧩 [createBudget] Hit API");
+try {
+const { walletId, category, limit } = req.body;
+console.log("➡️ Payload:", { walletId, category, limit });
+const userId = req.user.userId;
 
-    const wallet = await Wallet.findById(walletId);
-    if (!wallet){
-      return res.status(404).json({ message: 'Wallet not found' });
-    }
-     
 
-    if (!isAuthorizedForWallet(wallet, userId)) {
-      return res.status(403).json({ message: 'Unauthorized to create budget for this wallet' });
-    }
-   
-    const budget = await Budget.create({
-      walletId,
-      category,
-      limit,
-      spent: 0, // Default spent amount
-    });
-     
-    res.status(201).json(budget);
-    
+const wallet = await Wallet.findById(walletId);
+console.log("📄 Wallet Found?", wallet);
+if (!wallet) {
+  return res.status(404).json({ message: 'Wallet not found' });
+}
 
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
- 
+if (!isAuthorizedForWallet(wallet, userId)) {
+  return res.status(403).json({ message: 'Unauthorized to create budget for this wallet' });
+}
+
+const budget = await Budget.create({
+  walletId,
+  category,
+  limit,
+  spent: 0,
+});
+
+res.status(201).json(budget);
+} catch (err) {
+res.status(500).json({ error: err.message });
+}
 };
 
 exports.getBudgets = async (req, res) => {
-  try {
-    const { walletId } = req.params;
-    const userId = req.user.userId;
+try {
+const { walletId } = req.params;
+const userId = req.user.id;
 
-    const wallet= await Wallet.findById(walletId);
-    if (!wallet) {
-      return res.status(404).json({ message: 'Wallet not found' });
-    }
 
-    if (!isAuthorizedForWallet(wallet, userId)) {
-      return res.status(403).json({ message: 'Not authorized' });
-    }
-    
-    const budgets = await Budget.find({ walletId });
-    res.status(200).json(budgets);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+const wallet = await Wallet.findById(walletId);
+if (!wallet) {
+  return res.status(404).json({ message: 'Wallet not found' });
 }
+
+if (!isAuthorizedForWallet(wallet, userId)) {
+  return res.status(403).json({ message: 'Not authorized' });
+}
+
+const budgets = await Budget.find({ walletId });
+res.status(200).json(budgets);
+} catch (err) {
+res.status(500).json({ error: err.message });
+}
+};
+
 exports.updateBudget = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { category, limit,spent } = req.body;
-    const userId = req.user.userId;
+try {
+const { id } = req.params;
+const { category, limit, spent } = req.body;
+const userId = req.user.id;
 
-    const budget = await Budget.findById(id);
-    if (!budget) {
-      return res.status(404).json({ message: 'Budget not found' });
-    }
 
-    const wallet = await Wallet.findById(budget.walletId);
-    if (!wallet || !isAuthorizedForWallet(wallet, userId)) {
-      return res.status(403).json({ message: 'Unauthorized to update this budget' });
-    }
-
-    if (category) budget.category = category;
-    if (limit) budget.limit = limit;
-    if (spent!==undefined) budget.spent = spent;
-    
-    await budget.save();
-    res.status(200).json(budget);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+const budget = await Budget.findById(id);
+if (!budget) {
+  return res.status(404).json({ message: 'Budget not found' });
 }
+
+const wallet = await Wallet.findById(budget.walletId);
+if (!wallet || !isAuthorizedForWallet(wallet, userId)) {
+  return res.status(403).json({ message: 'Unauthorized to update this budget' });
+}
+
+if (category) budget.category = category;
+if (limit) budget.limit = limit;
+if (spent !== undefined) budget.spent = spent;
+
+await budget.save();
+res.status(200).json(budget);
+} catch (err) {
+res.status(500).json({ error: err.message });
+}
+};
 
 exports.deleteBudget = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.userId;
+try {
+const { id } = req.params;
+const userId = req.user.id;
 
-    const budget = await Budget.findById(id);
-    if (!budget) {
-      return res.status(404).json({ message: 'Budget not found' });
-    }
 
-    const wallet = await Wallet.findById(budget.walletId);
-    if (!wallet || !isAuthorizedForWallet(wallet, userId)) {
-      return res.status(403).json({ message: 'Unauthorized to delete this budget' });
-    }
+const budget = await Budget.findById(id);
+if (!budget) {
+  return res.status(404).json({ message: 'Budget not found' });
+}
 
-    await Budget.findByIdAndDelete(id);
-    res.status(200).json({ message: 'Budget deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+const wallet = await Wallet.findById(budget.walletId);
+if (!wallet || !isAuthorizedForWallet(wallet, userId)) {
+  return res.status(403).json({ message: 'Unauthorized to delete this budget' });
+}
+
+await Budget.findByIdAndDelete(id);
+res.status(200).json({ message: 'Budget deleted successfully' });
+} catch (err) {
+res.status(500).json({ error: err.message });
+}
 };

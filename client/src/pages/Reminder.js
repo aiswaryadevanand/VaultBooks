@@ -12,7 +12,7 @@ import { useParams } from "react-router-dom";
 
 const Reminder = () => {
     const navigate = useNavigate();
-    const { id: walletId } = useParams(); // Get walletId from URL
+    const {  walletId } = useParams(); // Get walletId from URL
     const [reminders, setReminders] = useState([]);
     const [description, setDescription] = useState('');
     const [dueDate, setDueDate] = useState('');

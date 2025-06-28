@@ -20,6 +20,7 @@ import Budget from "./pages/Budget";
 import Reports from "./pages/Reports";
 import AuditLogs from "./pages/AuditLogs";
 import Team from "./pages/Team";
+import InviteUser from "./pages/InviteUser";
 
 import PrivateRoute from "./routes/PrivateRoute";
 
@@ -60,7 +61,7 @@ function App() {
 
         {/* Wallet-Specific Dashboard */}
         <Route
-          path="/wallets/:id"
+          path="/wallets/:walletId"
           element={
             <PrivateRoute>
               <DashboardLayout />
@@ -74,6 +75,7 @@ function App() {
           <Route path="reports" element={<Reports />} />
           <Route path="audit-logs" element={<AuditLogs />} />
           <Route path="team" element={<Team />} />
+          <Route path="team/invite" element={<InviteUser />} />
         </Route>
       </Routes>
     </Router>
