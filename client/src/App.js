@@ -1,45 +1,76 @@
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { loadStoredCredentials } from "./redux/slices/authSlice";
 
-import React,{useEffect} from 'react';
-import { loadStoredCredentials } from './redux/slices/authSlice';
-import { useDispatch} from 'react-redux';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Register from './pages/Register';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard'; 
-import DashboardHome from './pages/DashboardHome';     
-import Wallets from './pages/Wallets';
-import Transactions from './pages/TransactionsPage';
-import Budget from './pages/Budget';
-import Reports from './pages/Reports';
-import AuditLogs from './pages/AuditLogs';
-import Team from './pages/Team';
-import Reminder from './pages/Reminder';
+// Public Pages
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+
+// Protected Pages
+import WalletListPage from "./pages/WalletListPage"; // First page after login
+import Wallets from "./pages/Wallets"; // Wallet Create/Edit page
+import Reminder from "./pages/Reminder";
+
+// Dashboard Layout and Inner Pages
+import DashboardLayout from "./pages/Dashboard";
+import DashboardHome from "./pages/DashboardHome";
+import Transactions from "./pages/TransactionsPage";
+import Budget from "./pages/Budget";
+import Reports from "./pages/Reports";
+import AuditLogs from "./pages/AuditLogs";
+import Team from "./pages/Team";
+
+import PrivateRoute from "./routes/PrivateRoute";
 
 function App() {
-
   const dispatch = useDispatch();
-  
 
   useEffect(() => {
-    dispatch(loadStoredCredentials()); // <-- run on every mount or login
-  }, [dispatch]); 
+    dispatch(loadStoredCredentials());
+  }, [dispatch]);
 
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/register" />} />
+        {/* Public Routes */}
+        <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        {/* <Route path="/wallets/:id/budget" element={<Budget />} /> */}
-        <Route path="/wallets/:id/reminders" element={<Reminder/>} />
 
-        {/* Dashboard layout with nested content */}
-        <Route path="/dashboard" element={<Dashboard />}>
-          <Route index element={<DashboardHome />} /> 
-          <Route path="wallets" element={<Wallets />} />
+        {/* Default Authenticated Landing: Wallet List Page */}
+        <Route
+          path="/wallets-list"
+          element={
+            <PrivateRoute>
+              <WalletListPage />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Wallet Creation Page */}
+        <Route
+          path="/wallets/create"
+          element={
+            <PrivateRoute>
+              <Wallets />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Wallet-Specific Dashboard */}
+        <Route
+          path="/wallets/:id"
+          element={
+            <PrivateRoute>
+              <DashboardLayout />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<DashboardHome />} />
           <Route path="transactions" element={<Transactions />} />
-          <Route path="wallets/:id/budgets" element={<Budget />} />
-          
+          <Route path="budgets" element={<Budget />} />
+          <Route path="reminders" element={<Reminder />} />
           <Route path="reports" element={<Reports />} />
           <Route path="audit-logs" element={<AuditLogs />} />
           <Route path="team" element={<Team />} />

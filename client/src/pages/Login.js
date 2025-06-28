@@ -30,7 +30,7 @@ function Login() {
       setMessage(message || 'Login successful!');
 
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/wallets-list');
       }, 1500);
     } catch (err) {
       setMessage(err.response?.data?.message || 'Login failed');

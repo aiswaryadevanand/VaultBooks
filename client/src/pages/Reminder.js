@@ -84,12 +84,7 @@ const Reminder = () => {
 
     return (
         <div className="max-w-2xl mx-auto p-6">
-            <button
-                onClick={() => navigate('/dashboard/wallets')}
-                className="mb-4 bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition"
-            >
-                ← Back to Wallets
-            </button>
+           
             <h2 className="text-2xl font-bold mb-4 text-center">🔔 Reminders</h2>
             <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow space-y-4 mb-6">
                 <div>
