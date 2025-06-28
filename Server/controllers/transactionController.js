@@ -14,12 +14,19 @@ const calculateNextDate = (date, frequency) => {
   return next;
 };
 
-// @desc Get all transactions for logged-in user
+
+// @desc Get all transactions for logged-in user, optionally filtered by wallet
 const getTransactions = async (req, res) => {
   try {
     const userId = req.user.userId;
+    const { walletId } = req.query;
 
-    const transactions = await Transaction.find({ userId })
+    const filter = { userId };
+    if (walletId) {
+      filter.walletId = walletId;
+    }
+
+    const transactions = await Transaction.find(filter)
       .populate({ path: 'walletId', select: 'name type' })
       .sort({ createdAt: -1 });
 
@@ -29,6 +36,7 @@ const getTransactions = async (req, res) => {
     res.status(500).json({ error: 'Server Error' });
   }
 };
+
 
 // @desc Create new transaction
 const createTransaction = async (req, res) => {
