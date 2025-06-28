@@ -1,3 +1,4 @@
+// DashboardLayout.js
 import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -73,22 +74,30 @@ const DashboardLayout = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-6 md:p-8 bg-gray-100 overflow-auto">
-  {walletId && (
-    <div className="flex justify-between items-center mb-6">
-      <h2 className="text-2xl font-bold text-gray-800">
-        💼 {selectedWallet.name}
-      </h2>
-      {/* Optional: Add an Invite button */}
-      <button
-        onClick={() => navigate(`/wallets/${walletId}/team/invite`)}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-      >
-        + Invite
-      </button>
-    </div>
-  )}
-  <Outlet />
-</div>
+        {walletId && (
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate("/wallets-list")}
+                className="text-blue-600 hover:underline text-sm"
+              >
+                ← Back to Wallets
+              </button>
+              <h2 className="text-2xl font-bold text-gray-800">
+                💼 {selectedWallet.name}
+              </h2>
+            </div>
+            <button
+              onClick={() => navigate(`/wallets/${walletId}/team/invite`)}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            >
+              + Invite
+            </button>
+          </div>
+        )}
+
+        <Outlet />
+      </div>
     </div>
   );
 };

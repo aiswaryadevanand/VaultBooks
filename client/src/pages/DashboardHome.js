@@ -22,9 +22,9 @@ const DashboardHome = () => {
     const fetchData = async () => {
       try {
         const [budgetRes, reminderRes, txRes] = await Promise.all([
-          axios.get(`/api/budgets/${walletId}`, config),
-          axios.get(`/api/reminders/${walletId}`, config),
-          axios.get(`/api/transactions/wallet/${walletId}`, config),
+          axios.get(`http://localhost:5000/api/budgets/${walletId}`, config),
+          axios.get(`http://localhost:5000/api/reminders/${walletId}`, config),
+          axios.get(`http://localhost:5000/api/transactions/wallet/${walletId}`, config),
         ]);
         setBudgets(budgetRes.data || []);
         setReminders(reminderRes.data || []);

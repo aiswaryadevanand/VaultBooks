@@ -83,7 +83,7 @@ exports.inviteUser = async (req, res) => {
   if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
 
   // Only owner can invite
-  if (wallet.createdBy.toString() !== req.user.id)
+  if (wallet.createdBy.toString() !== req.user.userId)
     return res.status(403).json({ error: 'Only owner can invite users' });
 
   // Check if user already exists
@@ -114,4 +114,38 @@ exports.inviteUser = async (req, res) => {
   await wallet.save();
 
   return res.json({ message: 'User invited successfully', userId: invitedUser._id });
+};
+
+exports.getTeamMembers = async (req, res) => {
+  try {
+    const { walletId } = req.params;
+    const userId = req.user.userId;
+
+    const wallet = await Wallet.findById(walletId).populate('members.userId', 'username email');
+    if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+
+    if (
+      wallet.createdBy.toString() !== userId &&
+      !wallet.members.some(m => m.userId._id.toString() === userId)
+    ) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const team = [
+      {
+        userId: wallet.createdBy,
+        role: 'owner',
+      },
+      ...wallet.members.map(m => ({
+        userId: m.userId._id,
+        username: m.userId.username,
+        email: m.userId.email,
+        role: m.role,
+      }))
+    ];
+
+    res.json(team);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
