@@ -25,61 +25,62 @@ import InviteUser from "./pages/InviteUser";
 import PrivateRoute from "./routes/PrivateRoute";
 
 function App() {
-  const dispatch = useDispatch();
+const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(loadStoredCredentials());
-  }, [dispatch]);
+useEffect(() => {
+dispatch(loadStoredCredentials());
+}, [dispatch]);
 
-  return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+return (
+<Router>
+<Routes>
+{/* Public Routes */}
+<Route path="/" element={<Navigate to="/login" />} />
+<Route path="/register" element={<Register />} />
+<Route path="/login" element={<Login />} />
 
-        {/* Default Authenticated Landing: Wallet List Page */}
-        <Route
-          path="/wallets-list"
-          element={
-            <PrivateRoute>
-              <WalletListPage />
-            </PrivateRoute>
-          }
-        />
 
-        {/* Wallet Creation Page */}
-        <Route
-          path="/wallets/create"
-          element={
-            <PrivateRoute>
-              <Wallets />
-            </PrivateRoute>
-          }
-        />
+    {/* Default Authenticated Landing: Wallet List Page */}
+    <Route
+      path="/wallets-list"
+      element={
+        <PrivateRoute>
+          <WalletListPage />
+        </PrivateRoute>
+      }
+    />
 
-        {/* Wallet-Specific Dashboard */}
-        <Route
-          path="/wallets/:walletId"
-          element={
-            <PrivateRoute>
-              <DashboardLayout />
-            </PrivateRoute>
-          }
-        >
-          <Route index element={<DashboardHome />} />
-          <Route path="transactions" element={<Transactions />} />
-          <Route path="budgets" element={<Budget />} />
-          <Route path="reminders" element={<Reminder />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="audit-logs" element={<AuditLogs />} />
-          <Route path="team" element={<Team />} />
-          <Route path="team/invite" element={<InviteUser />} />
-        </Route>
-      </Routes>
-    </Router>
-  );
+    {/* Wallet Creation Page — must come before /wallets/:walletId */}
+    <Route
+      path="/wallets/create"
+      element={
+        <PrivateRoute>
+          <Wallets />
+        </PrivateRoute>
+      }
+    />
+
+    {/* Wallet-Specific Dashboard */}
+    <Route
+      path="/wallets/:walletId"
+      element={
+        <PrivateRoute>
+          <DashboardLayout />
+        </PrivateRoute>
+      }
+    >
+      <Route index element={<DashboardHome />} />
+      <Route path="transactions" element={<Transactions />} />
+      <Route path="budgets" element={<Budget />} />
+      <Route path="reminders" element={<Reminder />} />
+      <Route path="reports" element={<Reports />} />
+      <Route path="audit-logs" element={<AuditLogs />} />
+      <Route path="team" element={<Team />} />
+      <Route path="team/invite" element={<InviteUser />} />
+    </Route>
+  </Routes>
+</Router>
+);
 }
 
 export default App;
