@@ -9,7 +9,7 @@ import {
 } from '../api/budgetAPI';
 
 const Budget = () => {
-  const { id: walletId } = useParams(); // 👈 get walletId from URL
+  const { walletId } = useParams(); // 👈 get walletId from URL
   const navigate = useNavigate();
 
   const [budgets, setBudgets] = useState([]);

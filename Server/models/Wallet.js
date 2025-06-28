@@ -16,7 +16,7 @@ const walletSchema = new mongoose.Schema({
         required: true,
     },
     members: [{
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User',required: true },
         role: {
         type: String,
         enum: ['accountant', 'viewer'],

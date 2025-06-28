@@ -9,6 +9,7 @@ const {
     deleteBudget
 } = require('../controllers/budgetController');
 
+
 // Middleware to check if user is authenticated
 router.use(authMiddleware);   
 // Create a new budget

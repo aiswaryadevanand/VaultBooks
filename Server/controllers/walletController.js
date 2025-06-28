@@ -1,5 +1,6 @@
 const Wallet = require('../models/Wallet');
-
+const User = require('../models/User');
+ 
 exports.createWallet = async (req, res) => {
     try {
         const { name, type } = req.body;
@@ -10,7 +11,7 @@ exports.createWallet = async (req, res) => {
             name,
             type,
             createdBy: userId,
-            members: [userId],
+            members: [],
         });
 
         const savedWallet = await newWallet.save();
@@ -23,7 +24,10 @@ exports.createWallet = async (req, res) => {
     exports.getWallets = async (req, res) => {
         try {
             const userId =  req.user.userId; // Assuming user ID is stored in req.user
-            const wallets = await Wallet.find({ members: userId });
+            const wallets = await Wallet.find({  $or: [
+    { createdBy: userId },
+    { members: { $elemMatch: { userId } } }
+  ] });
             res.status(200).json(wallets);
         } catch (err) {
             res.status(500).json({ error: 'Error fetching wallets', details: err.message });
@@ -68,4 +72,46 @@ exports.deleteWallet = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Error deleting wallet', details: err.message });
   }
+};
+
+
+exports.inviteUser = async (req, res) => {
+  const { walletId } = req.params;
+  const { email, role } = req.body;
+
+  const wallet = await Wallet.findById(walletId);
+  if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+
+  // Only owner can invite
+  if (wallet.createdBy.toString() !== req.user.id)
+    return res.status(403).json({ error: 'Only owner can invite users' });
+
+  // Check if user already exists
+  let invitedUser = await User.findOne({ email });
+
+  // If not, create new user with a random password
+  if (!invitedUser) {
+    const tempPassword = Math.random().toString(36).slice(-8);
+    invitedUser = new User({
+      username: email.split('@')[0], // basic username
+      email,
+      password: tempPassword // password will be hashed in pre-save hook
+    });
+    await invitedUser.save();
+  }
+
+  // Check if already in wallet
+  const alreadyInWallet =
+    wallet.createdBy.toString() === invitedUser._id.toString() ||
+    wallet.members.some(m => m.userId.toString() === invitedUser._id.toString());
+
+  if (alreadyInWallet) {
+    return res.status(400).json({ error: 'User already part of this wallet' });
+  }
+
+  // Add to members
+  wallet.members.push({ userId: invitedUser._id, role });
+  await wallet.save();
+
+  return res.json({ message: 'User invited successfully', userId: invitedUser._id });
 };

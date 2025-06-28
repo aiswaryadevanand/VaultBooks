@@ -5,7 +5,8 @@ const{
     createWallet,
     getWallets,
     updateWallet,
-    deleteWallet
+    deleteWallet,
+    inviteUser
     
 }=require('../controllers/walletController');
 
@@ -16,5 +17,7 @@ router.post('/', createWallet);
 router.get('/', getWallets);
 router.put('/:id', updateWallet);
 router.delete('/:id', deleteWallet);
+router.post('/:walletId/invite', inviteUser);
+
 
 module.exports = router;

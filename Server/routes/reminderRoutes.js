@@ -8,6 +8,8 @@ const{
     deleteReminder,
 }= require('../controllers/reminderController');
 
+
+
 router.use(auth); // Apply auth middleware to all routes
 
 router.post('/', createReminder); // Create a new reminder
