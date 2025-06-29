@@ -12,7 +12,9 @@ const WalletListPage = () => {
   const navigate = useNavigate();
 
   const { wallets, status, error } = useSelector((state) => state.wallets);
-  const { token, user } = useSelector((state) => state.auth);
+ const auth = useSelector((state) => state.auth);
+const token = auth?.token;
+const user = auth?.user;
 
   useEffect(() => {
     if (token) {
@@ -26,12 +28,20 @@ const WalletListPage = () => {
   };
 
   const getUserRole = (wallet) => {
-    if (wallet.createdBy?.toString() === user._id) return "owner";
-    const member = wallet.members?.find(
-      (m) => m.userId?.toString?.() === user._id
-    );
-    return member?.role || "viewer";
-  };
+  const currentUserId = user?._id?.toString(); // ensure string
+  const createdById = wallet?.createdBy?.toString(); // ensure string
+
+  if (createdById === currentUserId) return "owner";
+  console.log("Wallet ID:", wallet._id);
+console.log("CreatedBy:", wallet.createdBy?.toString());
+console.log("Current User ID:", user?._id?.toString());
+
+  const member = wallet.members?.find(
+    (m) => m.userId?.toString?.() === currentUserId
+  );
+
+  return member?.role || "viewer";
+};
 
   const handleLogout = () => {
     dispatch(logout());
@@ -41,6 +51,13 @@ const WalletListPage = () => {
   const getInitial = () => {
     return user?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "?";
   };
+  if (!user || !user._id) {
+return (
+<p className="text-center text-gray-500 mt-10">
+Loading user data...
+</p>
+);
+}
 
   return (
     <div className="max-w-3xl mx-auto p-6">
