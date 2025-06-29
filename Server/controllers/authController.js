@@ -17,7 +17,8 @@ exports.register = async (req, res) => {
     const newUser = new User({
       username,
       email,
-      password // role will default to 'owner' from schema
+      password,
+      role:'user' // role will default to 'owner' from schema
     });
 
     await newUser.save();
@@ -53,7 +54,7 @@ exports.login = async (req, res) => {
       message: 'Login successful',
       token,
       user: {
-        id: user._id,
+        _id: user._id,
         username: user.username,
         email: user.email,
         role: user.role

@@ -37,7 +37,7 @@ const Register = () => {
       dispatch(setCredentials({ token, user }));
 
       setMessage('Registration successful! Redirecting...');
-      setTimeout(() => navigate('/login'), 1500);
+      setTimeout(() => navigate('/wallets-list'), 1500);
     } catch (err) {
       setMessage(err.response?.data?.message || 'Registration failed');
     }
@@ -87,7 +87,7 @@ const Register = () => {
           </button>
         </form>
 
-        {message && <p className="mt-4 text-green-600">{message}</p>}
+        {message && <p className={`mt-4 ${message.includes('failed') ? 'text-red-600' : 'text-green-600'}`}>{message}</p>}
 
         <p className="mt-6">
           Already have an account?{' '}

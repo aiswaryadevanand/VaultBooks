@@ -149,3 +149,20 @@ exports.getTeamMembers = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getWalletDetailsWithRoleCheck = async (req, res) => {
+  const { walletId } = req.params;
+
+  try {
+    const wallet = await Wallet.findById(walletId).populate('createdBy', 'username email');
+
+    if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+
+    return res.json({
+      message: `✅ Access granted to wallet as ${req.userRole}`,
+      wallet,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch wallet info', details: err.message });
+  }
+}
