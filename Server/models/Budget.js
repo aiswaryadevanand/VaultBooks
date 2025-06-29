@@ -1,23 +1,55 @@
+// const mongoose = require('mongoose');
+
+// const budgetSchema = new mongoose.Schema({
+//   walletId:{
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'Wallet',
+//     required: true
+//   },
+//   category: {
+//     type: String,
+//     required: true,
+//   },
+//   limit: {
+//     type: Number,
+//     required: true,
+//   },
+//   spent: {
+//     type: Number,
+//     default: 0,
+//   }
+// }, {timestamps: true});
+
+// module.exports = mongoose.model('Budget', budgetSchema);
+
+
+
+// models/Budget.js
 const mongoose = require('mongoose');
 
 const budgetSchema = new mongoose.Schema({
-  walletId:{
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  walletId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Wallet',
     required: true
   },
   category: {
     type: String,
-    required: true,
+    required: true
   },
   limit: {
     type: Number,
-    required: true,
+    required: true
   },
   spent: {
     type: Number,
-    default: 0,
+    default: 0
   }
-}, {timestamps: true});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Budget', budgetSchema);

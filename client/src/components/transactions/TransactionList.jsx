@@ -6,13 +6,15 @@ import {
 } from '../../api/transactionApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedTransaction } from '../../redux/slices/transactionSlice';
-import { fetchWallets } from '../../redux/slices/walletSlice';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const TransactionList = () => {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.user);
-  const wallets = useSelector((state) => state.wallets.wallets || []);
+
+  // ✅ Get walletId from selectedWallet
+  const selectedWallet = useSelector((state) => state.wallets.selectedWallet);
+  const walletId = selectedWallet?._id;
+
   const [deleteTransaction] = useDeleteTransactionMutation();
 
   const {
@@ -20,23 +22,18 @@ const TransactionList = () => {
     isLoading,
     isError,
     refetch,
-  } = useGetTransactionsQuery();
+  } = useGetTransactionsQuery(walletId, {
+    skip: !walletId, // skip query if walletId is not available
+  });
 
   useEffect(() => {
-    if (wallets.length === 0) {
-      dispatch(fetchWallets());
-    }
-  }, [dispatch, wallets.length]);
-
-  useEffect(() => {
-    if (user) {
+    if (walletId) {
       refetch();
     }
-  }, [user, refetch]);
+  }, [walletId, refetch]);
 
   const [filters, setFilters] = useState({
     category: '',
-    walletName: '',
     date: '',
     tags: '',
   });
@@ -47,18 +44,17 @@ const TransactionList = () => {
   };
 
   const categoryOptions = [...new Set(transactions.map((tx) => tx.category).filter(Boolean))];
-  const walletNameOptions = [...new Set(transactions.map((tx) => tx.walletId?.name).filter(Boolean))];
 
   const filteredData = transactions.filter((tx) => {
     const matchesCategory = !filters.category || tx.category?.toLowerCase().includes(filters.category.toLowerCase());
-    const matchesWallet = !filters.walletName || tx.walletId?.name === filters.walletName;
     const matchesDate = !filters.date || tx.date?.substring(0, 10) === filters.date;
     const matchesTag =
       !filters.tags ||
       (tx.tags && tx.tags.some((tag) => tag.toLowerCase().includes(filters.tags.toLowerCase())));
-    return matchesCategory && matchesWallet && matchesDate && matchesTag;
+    return matchesCategory && matchesDate && matchesTag;
   });
 
+  if (!walletId) return <p className="text-red-600">⚠️ Please select a wallet to view transactions.</p>;
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p className="text-red-500">Error fetching transactions.</p>;
 
@@ -77,18 +73,6 @@ const TransactionList = () => {
           <option value="">All Categories</option>
           {categoryOptions.map((cat, i) => (
             <option key={i} value={cat}>{cat}</option>
-          ))}
-        </select>
-
-        <select
-          name="walletName"
-          value={filters.walletName}
-          onChange={handleFilterChange}
-          className="border p-2 rounded w-40 text-left"
-        >
-          <option value="">All Wallets</option>
-          {walletNameOptions.map((name, i) => (
-            <option key={i} value={name}>{name}</option>
           ))}
         </select>
 
@@ -122,7 +106,6 @@ const TransactionList = () => {
               <th className="py-2 px-3">Category</th>
               <th className="py-2 px-3">Amount</th>
               <th className="py-2 px-3">Date</th>
-              <th className="py-2 px-3">Wallet</th>
               <th className="py-2 px-3">Tags</th>
               <th className="py-2 px-3">Recurring</th>
               <th className="py-2 px-3">Frequency</th>
@@ -137,7 +120,6 @@ const TransactionList = () => {
                 <td className="py-2 px-3">{tx.category}</td>
                 <td className="py-2 px-3">₹{tx.amount}</td>
                 <td className="py-2 px-3">{new Date(tx.date).toLocaleDateString()}</td>
-                <td className="py-2 px-3">{tx.walletId?.name || '—'}</td>
                 <td className="py-2 px-3 space-x-1">
                   {tx.tags?.map((tag, i) => (
                     <span
