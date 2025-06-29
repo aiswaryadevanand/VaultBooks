@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/authMiddleware');
-const { checkRole } = require('../middlewares/roleMiddleware');
+const { checkWalletRole } = require('../middlewares/roleMiddleware');
 
 const {
 createReminder,
@@ -16,8 +16,8 @@ router.use(auth); // Protect all routes
 router.get('/:walletId', getReminders);
 
 // Only owner/editor can create, update, delete
-router.post('/', checkRole(['accountant']), createReminder);
-router.put('/:id', checkRole(['accountant']), updateReminder);
-router.delete('/:id', checkRole(['accountant']), deleteReminder);
+router.post('/', checkWalletRole(['accountant']), createReminder);
+router.put('/:id', checkWalletRole(['accountant']), updateReminder);
+router.delete('/:id', checkWalletRole(['accountant']), deleteReminder);
 
 module.exports = router;

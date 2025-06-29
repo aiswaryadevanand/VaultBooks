@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { register, login, getLatestUser } = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
-const ownerOnly = require('../middlewares/roleMiddleware'); // ✅ Correct import
+const {checkWalletRole} = require('../middlewares/roleMiddleware'); // ✅ Correct import
 
 // Public routes
 router.post('/register', register);
@@ -17,7 +17,7 @@ router.get('/me', authMiddleware, (req, res) => {
 router.get('/latest-user', authMiddleware, getLatestUser);
 
 // Owner-only route
-router.get('/owner-section', authMiddleware, ownerOnly, (req, res) => {
+router.get('/owner-section', authMiddleware, checkWalletRole(['owner']), (req, res) => {
   res.json({ message: 'Owner access confirmed' });
 });
 

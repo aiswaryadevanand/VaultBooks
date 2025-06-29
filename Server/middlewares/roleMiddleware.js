@@ -1,5 +1,4 @@
-
-// roleMiddleware.js
+// middlewares/roleMiddleware.js
 const Wallet = require('../models/Wallet');
 
 exports.checkWalletRole = (allowedRoles) => {
@@ -9,24 +8,35 @@ exports.checkWalletRole = (allowedRoles) => {
 
     try {
       const wallet = await Wallet.findById(walletId);
-      if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
 
+      if (!wallet) {
+        return res.status(404).json({ error: 'Wallet not found' });
+      }
+
+      // If the logged-in user is the owner
       if (wallet.createdBy.toString() === userId) {
         req.userRole = 'owner';
         return next();
       }
 
-      const member = wallet.members.find((m) => m.userId.toString() === userId);
-      if (!member) return res.status(403).json({ error: 'Not a wallet member' });
+      // Check if the user is in the members array
+      const member = wallet.members.find(
+        (m) => m.userId.toString() === userId
+      );
 
-      if (!allowedRoles.includes(member.role)) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (!member) {
+        return res.status(403).json({ error: 'Not a wallet member' });
       }
 
-      req.userRole = member.role;
+      // Check if the member's role is in the allowedRoles
+      if (!allowedRoles.includes(member.role)) {
+        return res.status(403).json({ error: 'Access denied: insufficient role' });
+      }
+
+      req.userRole = member.role; // Attach role for later use
       next();
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: 'Server error', message: err.message });
     }
   };
 };
