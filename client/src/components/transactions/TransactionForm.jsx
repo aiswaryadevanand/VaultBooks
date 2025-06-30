@@ -33,6 +33,8 @@ const TransactionForm = () => {
   });
 
   useEffect(() => {
+    if (selected?.isMirror) return; // ❌ Do not allow editing mirrored transactions
+
     if (selected) {
       setForm({
         category: selected.category || '',
@@ -44,7 +46,7 @@ const TransactionForm = () => {
         file: null,
         recurring: selected.recurring || false,
         frequency: selected.frequency || '',
-        toWalletId: selected.toWalletId || '',
+        toWalletId: selected.toWalletId?._id || selected.toWalletId || '',
       });
       setFilePreview(
         selected.fileUrl ? `http://localhost:5000/${selected.fileUrl}` : null
@@ -120,6 +122,14 @@ const TransactionForm = () => {
     }
   };
 
+  if (selected?.isMirror) {
+    return (
+      <div className="p-4 text-sm text-red-500 border border-red-300 rounded shadow bg-white">
+        ⚠️ This is a mirrored transfer transaction and cannot be edited.
+      </div>
+    );
+  }
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -186,7 +196,7 @@ const TransactionForm = () => {
         value={form.date}
         onChange={handleChange}
         className="border p-2 rounded"
-        max={new Date().toISOString().split("T")[0]} // ✅ This disables future dates
+        max={new Date().toISOString().split("T")[0]}
         required
       />
       <input
@@ -227,7 +237,7 @@ const TransactionForm = () => {
         )}
       </div>
 
-      {/* Recurring Section */}
+      {/* Recurring */}
       <div className="md:col-span-2">
         <label className="flex items-center gap-2 mb-2">
           <input
@@ -269,3 +279,4 @@ const TransactionForm = () => {
 };
 
 export default TransactionForm;
+
