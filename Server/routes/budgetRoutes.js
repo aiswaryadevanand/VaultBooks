@@ -1,7 +1,7 @@
-
 const express= require('express');
 const router= express.Router();
-const authMiddleware = require('../middlewares/authMiddleware'); // Assuming you have an auth middleware
+const authMiddleware = require('../middlewares/authMiddleware');
+const { checkWalletRole } = require('../middlewares/roleMiddleware');
 const {
     createBudget,
     getBudgets,
@@ -9,17 +9,34 @@ const {
     deleteBudget
 } = require('../controllers/budgetController');
 
-
-// Middleware to check if user is authenticated
 router.use(authMiddleware);   
-// Create a new budget
-router.post('/', createBudget);   
-// Get budgets for a specific wallet
-router.get('/:walletId', getBudgets);
-// Update a budget by ID
-router.put('/:id', updateBudget);
-// Delete a budget by ID    
-router.delete('/:id', deleteBudget);
 
+// ✅ Create budget - owner or accountant
+router.post(
+  '/',
+  checkWalletRole(['owner', 'accountant']),
+  createBudget
+);
 
-module.exports = router;    
+// ✅ Get budgets - any role
+router.get(
+  '/:walletId',
+  checkWalletRole(['owner', 'accountant', 'viewer']),
+  getBudgets
+);
+
+// ✅ Update budget - owner or accountant (walletId in body)
+router.put(
+  '/:id',
+  checkWalletRole(['owner', 'accountant']),
+  updateBudget
+);
+
+// ✅ Delete budget - owner only (walletId in body)
+router.delete(
+  '/:id',
+  checkWalletRole(['owner']),
+  deleteBudget
+);
+
+module.exports = router;

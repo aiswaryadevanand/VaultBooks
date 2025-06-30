@@ -48,7 +48,7 @@ const Budget = () => {
 
   const handleDelete = async (id) => {
     try {
-      await deleteBudget(id);
+      await deleteBudget(id, { walletId });
       fetchBudgets();
     } catch (err) {
       alert('Failed to delete budget');
@@ -63,7 +63,7 @@ const Budget = () => {
 
   const handleUpdate = async (id) => {
     try {
-      await updateBudget(id, { category: editCategory, limit: editLimit });
+      await updateBudget(id, { walletId,category: editCategory, limit: editLimit });
       setEditId(null);
       fetchBudgets();
     } catch (err) {
