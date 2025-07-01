@@ -21,8 +21,11 @@ router.route('/')
 
 // Only owner/accountant can update/delete
 router.route('/:id')
-  .put(authMiddleware, checkWalletRole(['owner', 'accountant']), upload.single('file'), updateTransaction)
+  .put(authMiddleware, upload.single('file'), checkWalletRole(['owner', 'accountant']),  updateTransaction)
   .delete(authMiddleware, checkWalletRole(['owner']), deleteTransaction);
+
+  
+  // ... rest of the logic
 
 
 module.exports = router;

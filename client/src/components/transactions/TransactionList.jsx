@@ -404,7 +404,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedTransaction } from '../../redux/slices/transactionSlice';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
-const TransactionList = () => {
+
+const TransactionList = ({userRole}) => {
+  const canEdit = userRole === 'owner' || userRole === 'accountant'; // Check if user can edit transactions
+  const canDelete = userRole === 'owner'; 
   const dispatch = useDispatch();
   const selectedWallet = useSelector((state) => state.wallets.selectedWallet);
   const walletId = selectedWallet?._id;
@@ -533,7 +536,26 @@ const TransactionList = () => {
                 </td>
                 <td className="py-2 px-3">
                   <div className="flex items-center space-x-2">
-                    <button
+                    {canEdit && (
+                      <button
+                        onClick={() => dispatch(setSelectedTransaction(tx))}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                      >
+                        Edit
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => {
+                          console.log('🧾 Deleting tx:', tx._id, 'Wallet:', tx.walletId);
+                          deleteTransaction({ id: tx._id, walletId: tx.walletId?._id || tx.walletId })}
+                        }
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                      >
+                        Delete
+                      </button>
+                    )}
+                    {/* <button
                       onClick={() => dispatch(setSelectedTransaction(tx))}
                       className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
                     >
@@ -544,7 +566,7 @@ const TransactionList = () => {
                       className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                     >
                       Delete
-                    </button>
+                    </button> */}
                   </div>
                 </td>
               </tr>
