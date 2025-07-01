@@ -35,6 +35,9 @@ app.use('/api/budgets', budgetRoutes);
 const reminderRoutes = require('./routes/reminderRoutes');
 app.use('/api/reminders', reminderRoutes);
 
+app.use('/api/audit-logs', require('./routes/auditLogRoutes'));
+
+
 
 app.get('/', (req, res) => {
     res.send('VaultBooks Backend is running');
