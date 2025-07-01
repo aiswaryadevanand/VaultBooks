@@ -39,6 +39,10 @@ const Wallets = () => {
   const handleUpdate = (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
+    console.log("Attempting to update wallet with:", {
+  id: editId,
+  ...formData,
+});
     dispatch(updateWallet({ id: editId, ...formData }));
     setEditMode(false);
     setEditId(null);
