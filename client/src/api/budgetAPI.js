@@ -11,4 +11,7 @@ API.interceptors.request.use((req) => {
 export const createBudget = (data) => API.post("/budgets", data);
 export const getBudgets = (walletId) => API.get(`/budgets/${walletId}`);
 export const updateBudget = (id, data) => API.put(`/budgets/${id}`, data);
-export const deleteBudget = (id) => API.delete(`/budgets/${id}`);
+export const deleteBudget = (id, { walletId }) =>
+  API.delete(`/budgets/${id}`, {
+    data: { walletId }, // 🟢 Axios DELETE supports body via `data` key
+  });
