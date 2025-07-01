@@ -43,19 +43,21 @@ const createTransaction = async (req, res) => {
   const nextDate = recurring && frequency ? calculateNextDate(date, frequency) : null;
 
   try {
+    const numericAmount = parseFloat(amount);
+
     if (type === 'transfer') {
       if (!walletId || !toWalletId || walletId === toWalletId) {
         return res.status(400).json({ error: 'Invalid transfer wallets' });
       }
 
       const fromTx = new Transaction({
-        userId, type, category, amount, note, date, tags,
+        userId, type, category, amount: numericAmount, note, date, tags,
         walletId, toWalletId, fileUrl, recurring, frequency,
         nextDate, isMirror: false,
       });
 
       const toTx = new Transaction({
-        userId, type, category, amount, note, date, tags,
+        userId, type, category, amount: numericAmount, note, date, tags,
         walletId: toWalletId, toWalletId: walletId, fileUrl,
         recurring, frequency, nextDate, isMirror: true,
       });
@@ -74,7 +76,7 @@ const createTransaction = async (req, res) => {
     }
 
     const transaction = new Transaction({
-      userId, type, category, amount, note, date, tags,
+      userId, type, category, amount: numericAmount, note, date, tags,
       walletId, fileUrl, recurring, frequency, nextDate, isMirror: false,
     });
 
@@ -87,7 +89,7 @@ const createTransaction = async (req, res) => {
         category: { $regex: new RegExp(`^${category}$`, 'i') },
       });
       if (budget) {
-        budget.spent += amount;
+        budget.spent = parseFloat(budget.spent || 0) + numericAmount;
         await budget.save();
       }
     }
@@ -118,6 +120,8 @@ const updateTransaction = async (req, res) => {
   const nextDate = recurring && frequency ? calculateNextDate(date, frequency) : null;
 
   try {
+    const numericAmount = parseFloat(amount);
+
     const existing = await Transaction.findOne({ _id: transactionId, userId });
     if (!existing) return res.status(404).json({ message: 'Transaction not found' });
 
@@ -139,8 +143,17 @@ const updateTransaction = async (req, res) => {
     }
 
     const updatedFields = {
-      category, amount, type, note, date, tags,
-      walletId, toWalletId, recurring, frequency, nextDate
+      category,
+      amount: numericAmount,
+      type,
+      note,
+      date,
+      tags,
+      walletId,
+      toWalletId,
+      recurring,
+      frequency,
+      nextDate
     };
     if (fileUrl) updatedFields.fileUrl = fileUrl;
 
@@ -158,12 +171,12 @@ const updateTransaction = async (req, res) => {
         category: { $regex: new RegExp(`^${category}$`, 'i') },
       });
       if (newBudget) {
-        newBudget.spent += updatedTransaction.amount;
+        newBudget.spent = parseFloat(newBudget.spent || 0) + numericAmount;
         await newBudget.save();
       }
     }
 
-    // Update mirror if transfer
+    // Update mirror transaction
     if (updatedTransaction.type === 'transfer') {
       await Transaction.findOneAndUpdate({
         userId,
@@ -175,10 +188,16 @@ const updateTransaction = async (req, res) => {
         walletId: existing.toWalletId,
         toWalletId: existing.walletId,
       }, {
-        category, amount, note, date, tags,
+        category,
+        amount: numericAmount,
+        note,
+        date,
+        tags,
         walletId: toWalletId,
         toWalletId: walletId,
-        recurring, frequency, nextDate,
+        recurring,
+        frequency,
+        nextDate,
         ...(fileUrl && { fileUrl }),
       });
     }
@@ -226,7 +245,7 @@ const deleteTransaction = async (req, res) => {
         category: { $regex: new RegExp(`^${transaction.category}$`, 'i') },
       });
       if (budget) {
-        budget.spent = Math.max(0, budget.spent - transaction.amount);
+        budget.spent = Math.max(0, parseFloat(budget.spent || 0) - parseFloat(transaction.amount));
         await budget.save();
       }
     }
