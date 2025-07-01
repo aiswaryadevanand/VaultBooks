@@ -6,6 +6,8 @@ import { useDispatch } from 'react-redux';
 import { setCredentials } from '../redux/slices/authSlice';
 import { Player } from '@lottiefiles/react-lottie-player';
 import moneyAnim from '../assets/money.json';
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
 function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -24,18 +26,25 @@ function Login() {
     try {
       const res = await axios.post('http://localhost:5000/api/auth/login', formData);
       const { token, user, message } = res.data;
+     
 
       localStorage.setItem('token', token);
       dispatch(setCredentials({ token, user }));
       setMessage(message || 'Login successful!');
 
       setTimeout(() => {
-        navigate('/wallets-list');
+        navigate('/wallets-list',{replace:true});
       }, 1500);
     } catch (err) {
       setMessage(err.response?.data?.message || 'Login failed');
     }
   };
+  const token=useSelector((state)=> state.auth.token);
+  useEffect(() => {
+  if (token) {
+    navigate('/wallets-list', { replace: true }); // 🚫 prevents back to login
+  }
+}, [token, navigate]);
 
   return (
     <div className="flex h-screen">
