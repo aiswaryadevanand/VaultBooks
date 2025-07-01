@@ -1,28 +1,20 @@
-import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import {
   getBudgets,
   createBudget,
   deleteBudget,
   updateBudget,
 } from '../api/budgetAPI';
-import axios from 'axios';
 
 const Budget = () => {
-  const { walletId } = useParams(); // 👈 get walletId from URL
-  const navigate = useNavigate();
-
-
+  const { walletId } = useParams();
+  const userRole = useSelector((state) => state.wallets.userRole || 'viewer');
 
   const [budgets, setBudgets] = useState([]);
   const [category, setCategory] = useState('');
   const [limit, setLimit] = useState('');
-
-  const [userRole, setUserRole] = useState(''); // 🆕 For role-based access
-  const [loadingRole, setLoadingRole] = useState(true); // 🆕 For loading state
-
-  // 🆕 For editing
   const [editId, setEditId] = useState(null);
   const [editCategory, setEditCategory] = useState('');
   const [editLimit, setEditLimit] = useState('');
@@ -36,31 +28,8 @@ const Budget = () => {
     }
   };
 
-  const fetchUserRole = async () => {
-  try {
-    const res = await axios.get(
-      `http://localhost:5000/api/wallets/${walletId}/details`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      }
-    );
-    setUserRole(res.data.userRole);
-  } catch (err) {
-    console.error('Failed to fetch user role:', err);
-  } finally {
-    setLoadingRole(false); // 🆕
-  }
-};
-
-
-
   useEffect(() => {
-    if (walletId) {
-      fetchBudgets();
-      fetchUserRole();
-    }
+    if (walletId) fetchBudgets();
   }, [walletId]);
 
   const handleCreate = async (e) => {
@@ -85,15 +54,19 @@ const Budget = () => {
   };
 
   const handleEdit = (budget) => {
-  if (userRole === 'viewer') return; // ⛔ silently block viewer
-  setEditId(budget._id);
-  setEditCategory(budget.category);
-  setEditLimit(budget.limit);
-};
+    if (userRole === 'viewer') return; // ⛔ viewers can't edit
+    setEditId(budget._id);
+    setEditCategory(budget.category);
+    setEditLimit(budget.limit);
+  };
 
   const handleUpdate = async (id) => {
     try {
-      await updateBudget(id, { walletId, category: editCategory, limit: editLimit });
+      await updateBudget(id, {
+        walletId,
+        category: editCategory,
+        limit: editLimit,
+      });
       setEditId(null);
       fetchBudgets();
     } catch (err) {
@@ -103,18 +76,20 @@ const Budget = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-
-
       <h2 className="text-2xl font-bold mb-4 text-center">💰 Budget Tracker</h2>
-      {!loadingRole && userRole !== 'viewer' && (
-        <form onSubmit={handleCreate} className="bg-white shadow p-4 rounded-md mb-6 space-y-4">
+
+      {['owner', 'accountant'].includes(userRole) && (
+        <form
+          onSubmit={handleCreate}
+          className="bg-white shadow p-4 rounded-md mb-6 space-y-4"
+        >
           <div>
             <label className="block text-sm font-medium mb-1">Category</label>
             <input
               type="text"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full border rounded-md px-3 py-2"
               placeholder="e.g. Groceries"
               required
             />
@@ -125,7 +100,7 @@ const Budget = () => {
               type="number"
               value={limit}
               onChange={(e) => setLimit(e.target.value)}
-              className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full border rounded-md px-3 py-2"
               placeholder="e.g. 5000"
               required
             />
@@ -141,9 +116,11 @@ const Budget = () => {
 
       <div className="space-y-4">
         {budgets.map((budget) => (
-          <div key={budget._id} className="bg-gray-100 p-4 rounded-md flex justify-between items-center shadow">
-            {editId === budget._id && userRole !== 'viewer' ? (
-
+          <div
+            key={budget._id}
+            className="bg-gray-100 p-4 rounded-md flex justify-between items-center shadow"
+          >
+            {editId === budget._id ? (
               <div className="w-full flex flex-col md:flex-row gap-2 items-center justify-between">
                 <div className="flex flex-col md:flex-row gap-2 w-full">
                   <input
@@ -177,23 +154,35 @@ const Budget = () => {
               <>
                 <div className="w-full">
                   <h3 className="text-lg font-semibold">{budget.category}</h3>
-                  <p className="text-sm text-gray-600">₹{budget.spent} / ₹{budget.limit}</p>
+                  <p className="text-sm text-gray-600">
+                    ₹{budget.spent} / ₹{budget.limit}
+                  </p>
 
-                  {/* ✅ Progress Bar */}
+                  {/* Progress Bar */}
                   <div className="w-full bg-gray-300 h-3 rounded overflow-hidden mt-1">
                     <div
-                      className={`h-full transition-all duration-300 ${(budget.spent / budget.limit) * 100 >= 100 ? 'bg-red-500' : 'bg-green-500'
-                        }`}
-                      style={{ width: `${Math.min((budget.spent / budget.limit) * 100, 100)}%` }}
+                      className={`h-full transition-all duration-300 ${
+                        (budget.spent / budget.limit) * 100 >= 100
+                          ? 'bg-red-500'
+                          : 'bg-green-500'
+                      }`}
+                      style={{
+                        width: `${Math.min(
+                          (budget.spent / budget.limit) * 100,
+                          100
+                        )}%`,
+                      }}
                     />
                   </div>
 
-                  {/* ✅ Percentage Label */}
                   <p className="text-xs text-right mt-1 text-gray-500">
-                    {Math.min(((budget.spent / budget.limit) * 100), 100).toFixed(0)}% used
+                    {Math.min(
+                      (budget.spent / budget.limit) * 100,
+                      100
+                    ).toFixed(0)}
+                    % used
                   </p>
 
-                  {/* ✅ Visual Alert */}
                   {budget.spent >= budget.limit && (
                     <p className="text-xs text-red-600 font-medium mt-1">
                       ⚠️ Budget exceeded
@@ -202,7 +191,7 @@ const Budget = () => {
                 </div>
 
                 <div className="flex gap-4">
-                  {userRole !== 'viewer' && (
+                  {['owner', 'accountant'].includes(userRole) && (
                     <button
                       onClick={() => handleEdit(budget)}
                       className="text-blue-600 hover:underline"
@@ -220,7 +209,6 @@ const Budget = () => {
                     </button>
                   )}
                 </div>
-
               </>
             )}
           </div>
