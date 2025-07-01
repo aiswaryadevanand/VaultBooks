@@ -16,8 +16,8 @@ router.use(auth); // Protect all routes
 router.get('/:walletId', getReminders);
 
 // Only owner/editor can create, update, delete
-router.post('/', checkWalletRole(['accountant']), createReminder);
-router.put('/:id', checkWalletRole(['accountant']), updateReminder);
-router.delete('/:id', checkWalletRole(['accountant']), deleteReminder);
+router.post('/', checkWalletRole(['owner', 'accountant']), createReminder);
+router.put('/:id', checkWalletRole(['owner', 'accountant']), updateReminder);
+router.delete('/:id', checkWalletRole(['owner']), deleteReminder); // Only owner can delete
 
 module.exports = router;
