@@ -15,6 +15,9 @@ const Wallets = () => {
 
   const { wallets } = useSelector((state) => state.wallets);
   const { token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
+  
+  const userWallets= wallets.filter(wallet => wallet.createdBy === user?._id);
 
   const [formData, setFormData] = useState({ name: "", type: "personal" });
   const [editMode, setEditMode] = useState(false);
@@ -36,6 +39,10 @@ const Wallets = () => {
   const handleUpdate = (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
+    console.log("Attempting to update wallet with:", {
+  id: editId,
+  ...formData,
+});
     dispatch(updateWallet({ id: editId, ...formData }));
     setEditMode(false);
     setEditId(null);
@@ -125,11 +132,11 @@ const Wallets = () => {
       {/* Wallet List */}
       <div className="mt-8">
         <h3 className="text-lg font-semibold mb-3">Your Wallets</h3>
-        {wallets.length === 0 ? (
+        {userWallets.length === 0 ? (
           <p className="text-gray-500">No wallets yet.</p>
         ) : (
           <ul className="space-y-2">
-            {wallets.map((wallet) => (
+            {userWallets.map((wallet) => (
               <li
                 key={wallet._id}
                 className="p-3 border rounded flex justify-between items-center"
