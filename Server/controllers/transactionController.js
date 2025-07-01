@@ -1,4 +1,3 @@
-
 const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 const logAudit = require('../utils/logAudit');
@@ -82,7 +81,11 @@ const createTransaction = async (req, res) => {
     const saved = await transaction.save();
 
     if (type === 'expense') {
-      const budget = await Budget.findOne({ walletId, category, userId });
+      const budget = await Budget.findOne({
+        walletId,
+        userId,
+        category: { $regex: new RegExp(`^${category}$`, 'i') },
+      });
       if (budget) {
         budget.spent += amount;
         await budget.save();
@@ -117,12 +120,18 @@ const updateTransaction = async (req, res) => {
   try {
     const existing = await Transaction.findOne({ _id: transactionId, userId });
     if (!existing) return res.status(404).json({ message: 'Transaction not found' });
+
     if (existing.isMirror) {
       return res.status(400).json({ message: 'Cannot edit mirrored transaction directly' });
     }
 
+    // Rollback old budget
     if (existing.type === 'expense') {
-      const oldBudget = await Budget.findOne({ walletId: existing.walletId, category: existing.category, userId });
+      const oldBudget = await Budget.findOne({
+        walletId: existing.walletId,
+        userId,
+        category: { $regex: new RegExp(`^${existing.category}$`, 'i') },
+      });
       if (oldBudget) {
         oldBudget.spent = Math.max(0, oldBudget.spent - existing.amount);
         await oldBudget.save();
@@ -136,15 +145,42 @@ const updateTransaction = async (req, res) => {
     if (fileUrl) updatedFields.fileUrl = fileUrl;
 
     const updatedTransaction = await Transaction.findOneAndUpdate(
-      { _id: transactionId, userId }, updatedFields, { new: true }
+      { _id: transactionId, userId },
+      updatedFields,
+      { new: true }
     );
 
+    // Apply new budget
     if (updatedTransaction.type === 'expense') {
-      const newBudget = await Budget.findOne({ walletId: updatedTransaction.walletId, category: updatedTransaction.category, userId });
+      const newBudget = await Budget.findOne({
+        walletId,
+        userId,
+        category: { $regex: new RegExp(`^${category}$`, 'i') },
+      });
       if (newBudget) {
         newBudget.spent += updatedTransaction.amount;
         await newBudget.save();
       }
+    }
+
+    // Update mirror if transfer
+    if (updatedTransaction.type === 'transfer') {
+      await Transaction.findOneAndUpdate({
+        userId,
+        type: 'transfer',
+        isMirror: true,
+        amount: existing.amount,
+        date: existing.date,
+        category: existing.category,
+        walletId: existing.toWalletId,
+        toWalletId: existing.walletId,
+      }, {
+        category, amount, note, date, tags,
+        walletId: toWalletId,
+        toWalletId: walletId,
+        recurring, frequency, nextDate,
+        ...(fileUrl && { fileUrl }),
+      });
     }
 
     await logAudit({
@@ -184,7 +220,11 @@ const deleteTransaction = async (req, res) => {
     }
 
     if (transaction.type === 'expense') {
-      const budget = await Budget.findOne({ walletId: transaction.walletId, category: transaction.category, userId });
+      const budget = await Budget.findOne({
+        walletId: transaction.walletId,
+        userId,
+        category: { $regex: new RegExp(`^${transaction.category}$`, 'i') },
+      });
       if (budget) {
         budget.spent = Math.max(0, budget.spent - transaction.amount);
         await budget.save();

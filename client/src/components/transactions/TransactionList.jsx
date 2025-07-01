@@ -1,3 +1,6 @@
+
+
+
 import React, { useEffect, useState } from 'react';
 import {
   useGetTransactionsQuery,
@@ -6,16 +9,14 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedTransaction } from '../../redux/slices/transactionSlice';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import toast, { Toaster, useToasterStore } from 'react-hot-toast';
 
-
-const TransactionList = ({userRole}) => {
-  const canEdit = userRole === 'owner' || userRole === 'accountant'; // Check if user can edit transactions
-  const canDelete = userRole === 'owner'; 
+const TransactionList = ({ userRole }) => {
   const dispatch = useDispatch();
   const selectedWallet = useSelector((state) => state.wallets.selectedWallet);
   const walletId = selectedWallet?._id;
-
   const [deleteTransaction] = useDeleteTransactionMutation();
+
   const { data: transactions = [], isLoading, isError, refetch } = useGetTransactionsQuery(walletId, {
     skip: !walletId,
   });
@@ -25,10 +26,22 @@ const TransactionList = ({userRole}) => {
   }, [walletId, refetch]);
 
   const [filters, setFilters] = useState({ category: '', date: '', tags: '' });
+  const canEdit = userRole === 'owner' || userRole === 'accountant';
+  const canDelete = userRole === 'owner';
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDelete = async (id, walletId) => {
+    try {
+      await deleteTransaction({ id, walletId }).unwrap();
+      toast.success(' Transaction deleted successfully');
+    } catch (err) {
+      console.error('Delete failed:', err);
+      toast.error('❌ Failed to delete transaction');
+    }
   };
 
   const categoryOptions = [...new Set(transactions.map((tx) => tx.category).filter(Boolean))];
@@ -40,14 +53,34 @@ const TransactionList = ({userRole}) => {
     return matchesCategory && matchesDate && matchesTag;
   });
 
+  const hasTransfer = filteredData.some((tx) => tx.type === 'transfer');
+
+  const { toasts } = useToasterStore();
+  const isToastVisible = toasts.some((t) => t.visible);
+
   if (!walletId) return <p className="text-red-600">⚠️ Please select a wallet to view transactions.</p>;
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p className="text-red-500">Error fetching transactions.</p>;
 
-  const hasTransfer = filteredData.some((tx) => tx.type === 'transfer');
-
   return (
-    <div className="mt-6">
+    <div className="mt-6 relative z-10">
+      {isToastVisible && <div className="fixed inset-0 bg-black bg-opacity-40 z-40 transition-opacity" />}
+
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          className: 'bg-white text-black px-6 py-4 shadow-lg rounded-lg border border-gray-300',
+          duration: 3000,
+          style: { fontSize: '1rem', maxWidth: '90vw', zIndex: 50 },
+        }}
+        containerStyle={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+
       <h2 className="text-lg font-semibold mb-4">All Transactions</h2>
 
       {/* Filters */}
@@ -58,7 +91,6 @@ const TransactionList = ({userRole}) => {
             <option key={i} value={cat}>{cat}</option>
           ))}
         </select>
-
         <input
           type="date"
           name="date"
@@ -67,7 +99,6 @@ const TransactionList = ({userRole}) => {
           className="border p-2 rounded w-40"
           max={new Date().toISOString().split("T")[0]}
         />
-
         <input
           name="tags"
           placeholder="Tag"
@@ -132,7 +163,12 @@ const TransactionList = ({userRole}) => {
                 <td className="py-2 px-3">{tx.recurring ? tx.frequency || '—' : '—'}</td>
                 <td className="py-2 px-3">
                   {tx.fileUrl ? (
-                    <a href={`http://localhost:5000/${tx.fileUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                    <a
+                      href={`http://localhost:5000/${tx.fileUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800"
+                    >
                       View
                     </a>
                   ) : '—'}
@@ -149,16 +185,14 @@ const TransactionList = ({userRole}) => {
                     )}
                     {canDelete && (
                       <button
-                        onClick={() => {
-                          console.log('🧾 Deleting tx:', tx._id, 'Wallet:', tx.walletId);
-                          deleteTransaction({ id: tx._id, walletId: tx.walletId?._id || tx.walletId })}
+                        onClick={() =>
+                          handleDelete(tx._id, tx.walletId?._id || tx.walletId)
                         }
                         className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                       >
                         Delete
                       </button>
                     )}
-                    
                   </div>
                 </td>
               </tr>
