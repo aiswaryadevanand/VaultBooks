@@ -1,4 +1,3 @@
-// DashboardLayout.js
 import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,7 +15,7 @@ import {
 } from 'react-icons/fa';
 
 const DashboardLayout = () => {
-  const { selectedWallet } = useSelector((state) => state.wallets);
+  const { selectedWallet, userRole } = useSelector((state) => state.wallets);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -83,16 +82,30 @@ const DashboardLayout = () => {
               >
                 ← Back to Wallets
               </button>
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
                 💼 {selectedWallet.name}
+                <span
+                  className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${
+                    userRole === "owner"
+                      ? "bg-green-100 text-green-700"
+                      : userRole === "editor"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {userRole}
+                </span>
               </h2>
             </div>
-            <button
-              onClick={() => navigate(`/wallets/${walletId}/team/invite`)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-            >
-              + Invite
-            </button>
+
+            {userRole === "owner" && (
+              <button
+                onClick={() => navigate(`/wallets/${walletId}/team/invite`)}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+              >
+                + Invite
+              </button>
+            )}
           </div>
         )}
 
