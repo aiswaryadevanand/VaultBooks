@@ -14,7 +14,6 @@ const calculateNextDate = (date, frequency) => {
   return next;
 };
 
-// @desc Get all transactions for logged-in user, optionally filtered by wallet
 const getTransactions = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -34,7 +33,6 @@ const getTransactions = async (req, res) => {
   }
 };
 
-// @desc Create new transaction
 const createTransaction = async (req, res) => {
   const userId = req.user.userId;
   const {
@@ -65,6 +63,13 @@ const createTransaction = async (req, res) => {
 
       await fromTx.save();
       await toTx.save();
+
+      await logAudit({
+        userId,
+        walletId,
+        action: 'create-transaction-transfer',
+        details: { fromTx, toTx }
+      });
 
       return res.status(201).json({ from: fromTx, to: toTx });
     }
@@ -124,29 +129,16 @@ const updateTransaction = async (req, res) => {
       }
     }
 
-    const nextDate = recurring && frequency ? calculateNextDate(date, frequency) : null;
-
     const updatedFields = {
-      category,
-      amount,
-      type,
-      note,
-      date,
-      tags,
-      walletId,
-      recurring,
-      frequency,
-      nextDate
+      category, amount, type, note, date, tags,
+      walletId, toWalletId, recurring, frequency, nextDate
     };
     if (fileUrl) updatedFields.fileUrl = fileUrl;
 
     const updatedTransaction = await Transaction.findOneAndUpdate(
-      { _id: transactionId, userId },
-      updatedFields,
-      { new: true }
+      { _id: transactionId, userId }, updatedFields, { new: true }
     );
 
-    // Update budget
     if (updatedTransaction.type === 'expense') {
       const newBudget = await Budget.findOne({ walletId: updatedTransaction.walletId, category: updatedTransaction.category, userId });
       if (newBudget) {
@@ -164,79 +156,6 @@ const updateTransaction = async (req, res) => {
 
     res.json(updatedTransaction);
   } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: error.message });
-  }
-};
-
-// @desc Delete transaction
-const deleteTransaction = async (req, res) => {
-  const userId = req.user.userId;
-  try {
-    const deleted = await Transaction.findOneAndDelete({
-      _id: req.params.id,
-      userId
-    });
-
-    if (!deleted) {
-      return res.status(404).json({ message: 'Transaction not found' });
-    }
-
-    // Rollback budget
-    if (deleted.type === 'expense') {
-      const budget = await Budget.findOne({ walletId: deleted.walletId, category: deleted.category, userId });
-      const budget = await Budget.findOne({ walletId: existing.walletId, category: existing.category, userId });
-      if (budget) {
-        budget.spent = Math.max(0, budget.spent - existing.amount);
-        await budget.save();
-      }
-    }
-
-    await logAudit({
-      userId,
-      walletId: deleted.walletId,
-      action: 'delete-transaction',
-      details: {
-        transactionId: deleted._id,
-        amount: deleted.amount,
-        category: deleted.category
-      }
-    });
-
-    res.json({ message: 'Transaction deleted' });
-    const updatedFields = {
-      category, amount, type, note, date, tags,
-      walletId, recurring, frequency, nextDate
-    };
-    if (fileUrl) updatedFields.fileUrl = fileUrl;
-
-    const updatedTransaction = await Transaction.findOneAndUpdate(
-      { _id: transactionId, userId }, updatedFields, { new: true }
-    );
-
-    if (updatedTransaction.type === 'expense') {
-      const budget = await Budget.findOne({ walletId, category, userId });
-      if (budget) {
-        budget.spent += updatedTransaction.amount;
-        await budget.save();
-      }
-    }
-
-    if (updatedTransaction.type === 'transfer') {
-      await Transaction.findOneAndUpdate({
-        userId, type: 'transfer', isMirror: true,
-        amount: existing.amount, date: existing.date, category: existing.category,
-        walletId: existing.toWalletId, toWalletId: existing.walletId,
-      }, {
-        category, amount, note, date, tags,
-        walletId: toWalletId, toWalletId: walletId,
-        recurring, frequency, nextDate,
-        ...(fileUrl && { fileUrl }),
-      });
-    }
-
-    res.json(updatedTransaction);
-  } catch (error) {
     console.error('Update transaction error:', error);
     res.status(400).json({ error: error.message });
   }
@@ -245,17 +164,21 @@ const deleteTransaction = async (req, res) => {
 const deleteTransaction = async (req, res) => {
   const userId = req.user.userId;
   const { id } = req.params;
-  console.log('👉 DELETE called with ID:', req.params.id);
-console.log('👉 Authenticated user:', req.user);
 
   try {
     const transaction = await Transaction.findById(id);
+    if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
 
     if (transaction.type === 'transfer') {
       const mirrorTx = await Transaction.findOne({
-        userId, type: 'transfer', isMirror: !transaction.isMirror,
-        amount: transaction.amount, date: transaction.date, category: transaction.category,
-        walletId: transaction.toWalletId, toWalletId: transaction.walletId,
+        userId,
+        type: 'transfer',
+        isMirror: !transaction.isMirror,
+        amount: transaction.amount,
+        date: transaction.date,
+        category: transaction.category,
+        walletId: transaction.toWalletId,
+        toWalletId: transaction.walletId,
       });
       if (mirrorTx) await mirrorTx.deleteOne();
     }
@@ -269,10 +192,19 @@ console.log('👉 Authenticated user:', req.user);
     }
 
     await transaction.deleteOne();
-    
+
+    await logAudit({
+      userId,
+      walletId: transaction.walletId,
+      action: 'delete-transaction',
+      details: {
+        transactionId: transaction._id,
+        amount: transaction.amount,
+        category: transaction.category
+      }
+    });
 
     res.json({ message: 'Transaction deleted' });
-    
   } catch (error) {
     console.error('Delete transaction error:', error);
     res.status(400).json({ error: error.message });
