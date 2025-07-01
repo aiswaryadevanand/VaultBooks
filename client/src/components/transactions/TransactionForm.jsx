@@ -38,7 +38,7 @@ const TransactionForm = ({ userRole, showDeleteSuccess }) => {
 
   useEffect(() => {
     if (showDeleteSuccess) {
-      toast.success('🗑️ Transaction deleted successfully');
+      toast.success(' Transaction deleted successfully');
     }
   }, [showDeleteSuccess]);
 
@@ -121,10 +121,10 @@ const TransactionForm = ({ userRole, showDeleteSuccess }) => {
     try {
       if (selected) {
         await updateTransaction({ id: selected._id, formData }).unwrap();
-        toast.success('✅ Transaction updated');
+        toast.success(' Transaction updated');
       } else {
         await addTransaction(formData).unwrap();
-        toast.success('✅ Transaction added');
+        toast.success(' Transaction added');
       }
 
       dispatch(clearSelectedTransaction());
