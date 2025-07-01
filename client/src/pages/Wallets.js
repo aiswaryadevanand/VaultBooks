@@ -14,14 +14,14 @@ const Wallets = () => {
   const navigate = useNavigate();
 
   const { wallets } = useSelector((state) => state.wallets);
-  const { token } = useSelector((state) => state.auth);
-  const { user } = useSelector((state) => state.auth);
-  
-  const userWallets= wallets.filter(wallet => wallet.createdBy === user?._id);
+  const { token, user } = useSelector((state) => state.auth);
+
+  const userWallets = wallets.filter(wallet => wallet.createdBy === user?._id);
 
   const [formData, setFormData] = useState({ name: "", type: "personal" });
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [message, setMessage] = useState(null); // ✅ Message state
 
   useEffect(() => {
     if (token) {
@@ -29,21 +29,33 @@ const Wallets = () => {
     }
   }, [dispatch, token]);
 
+  // Clear message after 3 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
   const handleCreate = (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
-    dispatch(createWallet(formData));
+
+    dispatch(createWallet(formData))
+      .then(() => setMessage({ type: "success", text: "Wallet created successfully." }))
+      .catch(() => setMessage({ type: "error", text: "Failed to create wallet." }));
+
     setFormData({ name: "", type: "personal" });
   };
 
   const handleUpdate = (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
-    console.log("Attempting to update wallet with:", {
-  id: editId,
-  ...formData,
-});
-    dispatch(updateWallet({ id: editId, ...formData }));
+
+    dispatch(updateWallet({ id: editId, ...formData }))
+      .then(() => setMessage({ type: "success", text: "Wallet updated successfully." }))
+      .catch(() => setMessage({ type: "error", text: "Failed to update wallet." }));
+
     setEditMode(false);
     setEditId(null);
     setFormData({ name: "", type: "personal" });
@@ -51,7 +63,9 @@ const Wallets = () => {
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this wallet?")) {
-      dispatch(deleteWallet(id));
+      dispatch(deleteWallet(id))
+        .then(() => setMessage({ type: "success", text: "Wallet deleted successfully." }))
+        .catch(() => setMessage({ type: "error", text: "Failed to delete wallet." }));
     }
   };
 
@@ -84,6 +98,19 @@ const Wallets = () => {
           Logout
         </button>
       </div>
+
+      {/* Message Display */}
+      {message && (
+        <div
+          className={`mb-4 px-4 py-2 rounded text-sm ${
+            message.type === "success"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-700"
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
 
       {/* Form */}
       <h2 className="text-xl font-bold mb-4 text-gray-800">

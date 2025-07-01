@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { CheckCircle, XCircle, AlertCircle, Clock } from "lucide-react";
 
 const DashboardHome = () => {
-  const { selectedWallet } = useSelector((state) => state.wallets);
+  const { selectedWallet, userRole } = useSelector((state) => state.wallets);
   const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
@@ -24,7 +26,7 @@ const DashboardHome = () => {
         const [budgetRes, reminderRes, txRes] = await Promise.all([
           axios.get(`http://localhost:5000/api/budgets/${walletId}`, config),
           axios.get(`http://localhost:5000/api/reminders/${walletId}`, config),
-          axios.get(`http://localhost:5000/api/transactions/wallet/${walletId}`, config),
+          axios.get(`http://localhost:5000/api/transactions?walletId=${walletId}`, config),
         ]);
         setBudgets(budgetRes.data || []);
         setReminders(reminderRes.data || []);
@@ -37,66 +39,131 @@ const DashboardHome = () => {
     fetchData();
   }, [walletId, token]);
 
-  const goToInvitePage = () => {
-    navigate(`/wallets/${walletId}/team/invite`);
+  const totalIncome = transactions
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = transactions
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const chartData = [
+    { name: "Total Income", amount: totalIncome },
+    { name: "Total Expense", amount: totalExpense },
+  ];
+
+  const getBudgetStatus = (spent, limit) => {
+    if (spent > limit) return <XCircle className="text-red-500 w-5 h-5" />;
+    return <CheckCircle className="text-green-500 w-5 h-5" />;
   };
 
   return (
-    <div className="p-4 space-y-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">📊 Dashboard Overview</h2>
-       
+    <div className="p-4 md:p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+        <div className="text-sm text-gray-500">
+          {selectedWallet?.name} ({userRole})
+        </div>
       </div>
 
-      {/* Budgets */}
-      <section className="bg-white p-4 shadow rounded">
-        <h3 className="text-xl font-semibold mb-2">Budgets</h3>
-        {budgets.length === 0 ? (
-          <p className="text-gray-500 text-sm">No budgets set.</p>
-        ) : (
-          <ul className="space-y-2">
-            {budgets.map((b) => (
-              <li key={b._id} className="border-b pb-2">
-                <strong>{b.category}</strong>: ₹{b.spent} / ₹{b.limit}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Income vs Expense Chart */}
+        <div className="bg-white p-4 shadow rounded border col-span-1 md:col-span-2">
+          <h3 className="text-lg font-semibold mb-3">Income vs Expense</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={chartData}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="amount" fill="#6366F1" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
 
-      {/* Reminders */}
-      <section className="bg-white p-4 shadow rounded">
-        <h3 className="text-xl font-semibold mb-2">Reminders</h3>
-        {reminders.length === 0 ? (
-          <p className="text-gray-500 text-sm">No reminders scheduled.</p>
-        ) : (
-          <ul className="space-y-2">
-            {reminders.map((r) => (
-              <li key={r._id}>
-                {r.description} — due on{" "}
-                {new Date(r.dueDate).toLocaleDateString()}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        {/* Budget Overview */}
+        <div className="bg-white p-4 shadow rounded border">
+          <h3 className="text-lg font-semibold mb-3">Budgets Overview</h3>
+          {budgets.length === 0 ? (
+            <p className="text-gray-500 text-sm">No budgets set.</p>
+          ) : (
+            <ul className="space-y-3">
+              {budgets.map((b) => {
+                const percent = Math.min((b.spent / b.limit) * 100, 100);
+                return (
+                  <li key={b._id}>
+                    <div className="flex justify-between items-center text-sm font-medium">
+                      <span>{b.category}</span>
+                      <span>₹{b.spent} / ₹{b.limit}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="w-full bg-gray-200 rounded h-2">
+                        <div
+                          className={`h-2 rounded ${percent > 100 ? 'bg-red-500' : 'bg-blue-500'}`}
+                          style={{ width: `${percent}%` }}
+                        ></div>
+                      </div>
+                      {getBudgetStatus(b.spent, b.limit)}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
 
-      {/* Transactions */}
-      <section className="bg-white p-4 shadow rounded">
-        <h3 className="text-xl font-semibold mb-2">Recent Transactions</h3>
-        {transactions.length === 0 ? (
-          <p className="text-gray-500 text-sm">No transactions found.</p>
-        ) : (
-          <ul className="space-y-2">
-            {transactions.slice(0, 5).map((tx) => (
-              <li key={tx._id}>
-                <span className="font-medium">{tx.category}</span> — ₹
-                {tx.amount} ({tx.type})
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        {/* Recent Transactions */}
+        <div className="bg-white p-4 shadow rounded border col-span-1 md:col-span-2">
+          <h3 className="text-lg font-semibold mb-3">Recent Transactions</h3>
+          {transactions.length === 0 ? (
+            <p className="text-gray-500 text-sm">No transactions found.</p>
+          ) : (
+            <ul className="space-y-3 text-sm">
+              {transactions.slice(0, 5).map((tx) => (
+                <li key={tx._id} className="flex justify-between items-center border-b pb-2">
+                  <div>
+                    <div className="font-semibold">{tx.category}</div>
+                    <div className="text-xs text-gray-500">{tx.type}</div>
+                  </div>
+                  <div
+                    className={`text-sm font-semibold ${
+                      tx.type === "income" ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {tx.type === "income" ? "+" : "-"}₹{tx.amount}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Upcoming / Overdue Reminders */}
+        <div className="bg-white p-4 shadow rounded border">
+          <h3 className="text-lg font-semibold mb-3">Upcoming / Overdue Reminders</h3>
+          {reminders.length === 0 ? (
+            <p className="text-gray-500 text-sm">No reminders scheduled.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {reminders.map((r) => {
+                const due = new Date(r.dueDate);
+                const isOverdue = due < new Date();
+                return (
+                  <li key={r._id} className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      {isOverdue ? (
+                        <AlertCircle className="text-red-500 w-4 h-4" />
+                      ) : (
+                        <Clock className="text-yellow-500 w-4 h-4" />
+                      )}
+                      <span>{r.description}</span>
+                    </div>
+                    <span>{due.toLocaleDateString()}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
