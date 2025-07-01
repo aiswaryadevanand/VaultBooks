@@ -9,17 +9,23 @@ const {
 
 const authMiddleware = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/uploadMiddleware');
+const { checkWalletRole } = require('../middlewares/roleMiddleware');
 
 const router = express.Router();
 
 // /api/transactions
+// Get all transactions - all roles allowed
 router.route('/')
-  .get(authMiddleware, getTransactions)
-  .post(authMiddleware, upload.single('file'), createTransaction);
+  .get(authMiddleware, checkWalletRole(['owner', 'accountant', 'viewer']), getTransactions)
+  .post(authMiddleware, upload.single('file'), checkWalletRole(['owner', 'accountant']),  createTransaction);
 
-// /api/transactions/:id
+// Only owner/accountant can update/delete
 router.route('/:id')
-  .put(authMiddleware, upload.single('file'), updateTransaction)
-  .delete(authMiddleware, deleteTransaction);
+  .put(authMiddleware, upload.single('file'), checkWalletRole(['owner', 'accountant']),  updateTransaction)
+  .delete(authMiddleware, checkWalletRole(['owner']), deleteTransaction);
+
+  
+  // ... rest of the logic
+
 
 module.exports = router;

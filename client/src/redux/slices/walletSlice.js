@@ -73,6 +73,7 @@ const walletSlice = createSlice({
     initialState: {
         selectedWallet: null,
         wallets: [],
+        userRole:null,
         status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
         error: null,
     },
@@ -84,7 +85,10 @@ const walletSlice = createSlice({
         },
         setSelectedWallet: (state, action) => {
             state.selectedWallet = action.payload;
-}
+        },
+        setUserRole:(state,action)=>{
+            state.userRole=action.payload;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -124,5 +128,5 @@ const walletSlice = createSlice({
             });
         },
     });
-export const { resetWalletState,setSelectedWallet } = walletSlice.actions;
+export const { resetWalletState,setSelectedWallet,setUserRole } = walletSlice.actions;
 export default walletSlice.reducer;

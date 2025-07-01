@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   fetchWallets,
   setSelectedWallet,
+  setUserRole
 } from "../redux/slices/walletSlice";
 import { logout } from "../redux/slices/authSlice"; // ✅ logout action
 
@@ -22,10 +23,7 @@ const user = auth?.user;
     }
   }, [dispatch, token]);
 
-  const goToDashboard = (wallet) => {
-    dispatch(setSelectedWallet(wallet));
-    navigate(`/wallets/${wallet._id}`);
-  };
+  
 
   const getUserRole = (wallet) => {
   const currentUserId = user?._id?.toString(); // ensure string
@@ -42,6 +40,15 @@ console.log("Current User ID:", user?._id?.toString());
 
   return member?.role || "viewer";
 };
+
+const goToDashboard = (wallet) => {
+    const role = getUserRole(wallet);
+  dispatch(setSelectedWallet(wallet));
+  dispatch(setUserRole(role));
+
+  navigate(`/wallets/${wallet._id}`); 
+  };
+
 
   const handleLogout = () => {
     dispatch(logout());

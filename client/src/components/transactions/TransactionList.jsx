@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import {
   useGetTransactionsQuery,
@@ -8,35 +7,24 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedTransaction } from '../../redux/slices/transactionSlice';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
-const TransactionList = () => {
-  const dispatch = useDispatch();
 
-  // ✅ Get walletId from selectedWallet
+const TransactionList = ({userRole}) => {
+  const canEdit = userRole === 'owner' || userRole === 'accountant'; // Check if user can edit transactions
+  const canDelete = userRole === 'owner'; 
+  const dispatch = useDispatch();
   const selectedWallet = useSelector((state) => state.wallets.selectedWallet);
   const walletId = selectedWallet?._id;
 
   const [deleteTransaction] = useDeleteTransactionMutation();
-
-  const {
-    data: transactions = [],
-    isLoading,
-    isError,
-    refetch,
-  } = useGetTransactionsQuery(walletId, {
-    skip: !walletId, // skip query if walletId is not available
+  const { data: transactions = [], isLoading, isError, refetch } = useGetTransactionsQuery(walletId, {
+    skip: !walletId,
   });
 
   useEffect(() => {
-    if (walletId) {
-      refetch();
-    }
+    if (walletId) refetch();
   }, [walletId, refetch]);
 
-  const [filters, setFilters] = useState({
-    category: '',
-    date: '',
-    tags: '',
-  });
+  const [filters, setFilters] = useState({ category: '', date: '', tags: '' });
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -48,9 +36,7 @@ const TransactionList = () => {
   const filteredData = transactions.filter((tx) => {
     const matchesCategory = !filters.category || tx.category?.toLowerCase().includes(filters.category.toLowerCase());
     const matchesDate = !filters.date || tx.date?.substring(0, 10) === filters.date;
-    const matchesTag =
-      !filters.tags ||
-      (tx.tags && tx.tags.some((tag) => tag.toLowerCase().includes(filters.tags.toLowerCase())));
+    const matchesTag = !filters.tags || (tx.tags && tx.tags.some((tag) => tag.toLowerCase().includes(filters.tags.toLowerCase())));
     return matchesCategory && matchesDate && matchesTag;
   });
 
@@ -58,18 +44,15 @@ const TransactionList = () => {
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p className="text-red-500">Error fetching transactions.</p>;
 
+  const hasTransfer = filteredData.some((tx) => tx.type === 'transfer');
+
   return (
     <div className="mt-6">
       <h2 className="text-lg font-semibold mb-4">All Transactions</h2>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
-        <select
-          name="category"
-          value={filters.category}
-          onChange={handleFilterChange}
-          className="border p-2 rounded w-40 text-left"
-        >
+        <select name="category" value={filters.category} onChange={handleFilterChange} className="border p-2 rounded w-40 text-left">
           <option value="">All Categories</option>
           {categoryOptions.map((cat, i) => (
             <option key={i} value={cat}>{cat}</option>
@@ -82,6 +65,7 @@ const TransactionList = () => {
           value={filters.date}
           onChange={handleFilterChange}
           className="border p-2 rounded w-40"
+          max={new Date().toISOString().split("T")[0]}
         />
 
         <input
@@ -93,7 +77,7 @@ const TransactionList = () => {
         />
       </div>
 
-      {/* Transactions Table */}
+      {/* Table */}
       {transactions.length === 0 ? (
         <p className="text-gray-500">You have no transactions.</p>
       ) : filteredData.length === 0 ? (
@@ -105,6 +89,7 @@ const TransactionList = () => {
               <th className="py-2 px-3">Type</th>
               <th className="py-2 px-3">Category</th>
               <th className="py-2 px-3">Amount</th>
+              {hasTransfer && <th className="py-2 px-3">Direction</th>}
               <th className="py-2 px-3">Date</th>
               <th className="py-2 px-3">Tags</th>
               <th className="py-2 px-3">Recurring</th>
@@ -116,9 +101,16 @@ const TransactionList = () => {
           <tbody>
             {filteredData.map((tx) => (
               <tr key={tx._id} className="border-t hover:bg-gray-50">
-                <td className="py-2 px-3">{tx.type}</td>
+                <td className="py-2 px-3 capitalize">{tx.type}</td>
                 <td className="py-2 px-3">{tx.category}</td>
                 <td className="py-2 px-3">₹{tx.amount}</td>
+                {hasTransfer && (
+                  <td className="py-2 px-3 text-sm text-gray-700">
+                    {tx.type === 'transfer'
+                      ? `${tx.isMirror ? (tx.toWalletId?.name || 'Unknown') : (tx.walletId?.name || 'Unknown')} → ${tx.isMirror ? (tx.walletId?.name || 'Unknown') : (tx.toWalletId?.name || 'Unknown')}`
+                      : '—'}
+                  </td>
+                )}
                 <td className="py-2 px-3">{new Date(tx.date).toLocaleDateString()}</td>
                 <td className="py-2 px-3 space-x-1">
                   {tx.tags?.map((tag, i) => (
@@ -137,37 +129,36 @@ const TransactionList = () => {
                     <FaTimesCircle className="text-red-600" />
                   )}
                 </td>
-                <td className="py-2 px-3">
-                  {tx.recurring ? tx.frequency || '—' : '—'}
-                </td>
+                <td className="py-2 px-3">{tx.recurring ? tx.frequency || '—' : '—'}</td>
                 <td className="py-2 px-3">
                   {tx.fileUrl ? (
-                    <a
-                      href={`http://localhost:5000/${tx.fileUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800"
-                    >
+                    <a href={`http://localhost:5000/${tx.fileUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
                       View
                     </a>
-                  ) : (
-                    '—'
-                  )}
+                  ) : '—'}
                 </td>
                 <td className="py-2 px-3">
                   <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => dispatch(setSelectedTransaction(tx))}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteTransaction(tx._id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
+                    {canEdit && (
+                      <button
+                        onClick={() => dispatch(setSelectedTransaction(tx))}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                      >
+                        Edit
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => {
+                          console.log('🧾 Deleting tx:', tx._id, 'Wallet:', tx.walletId);
+                          deleteTransaction({ id: tx._id, walletId: tx.walletId?._id || tx.walletId })}
+                        }
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                      >
+                        Delete
+                      </button>
+                    )}
+                    
                   </div>
                 </td>
               </tr>

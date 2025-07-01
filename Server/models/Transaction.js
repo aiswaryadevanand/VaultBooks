@@ -1,4 +1,5 @@
 
+
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
@@ -11,6 +12,11 @@ const transactionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Wallet',
     required: true
+  },
+  toWalletId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Wallet',
+    default: null
   },
   type: {
     type: String,
@@ -39,6 +45,10 @@ const transactionSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  isMirror: {
+  type: Boolean,
+  default: false
+},
 
   // ✅ Recurring transaction fields
   recurring: {
@@ -52,7 +62,6 @@ const transactionSchema = new mongoose.Schema({
   nextDate: {
     type: Date
   }
-
 }, {
   timestamps: true
 });

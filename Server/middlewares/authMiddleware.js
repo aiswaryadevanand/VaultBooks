@@ -16,6 +16,8 @@ const authMiddleware = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("✅ Token decoded:", decoded);
     req.user = decoded; // attach user data to request
+     req.walletRole = 'owner';
+
     next(); // move to next middleware or controller
   } catch (err) {
     console.error("❌ Invalid token:", err.message);

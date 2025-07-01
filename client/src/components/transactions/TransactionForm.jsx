@@ -7,10 +7,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { clearSelectedTransaction } from '../../redux/slices/transactionSlice';
 
-const TransactionForm = () => {
+const TransactionForm = ({userRole}) => {
+  
   const dispatch = useDispatch();
   const selected = useSelector((state) => state.transactions.selectedTransaction);
-  const walletId = useSelector((state) => state.wallets.selectedWallet?._id); // ✅ fixed to use selectedWallet
+  const walletId = useSelector((state) => state.wallets.selectedWallet?._id);
+  const wallets = useSelector((state) => state.wallets.wallets);
+
   const [addTransaction] = useAddTransactionMutation();
   const [updateTransaction] = useUpdateTransactionMutation();
 
@@ -27,9 +30,13 @@ const TransactionForm = () => {
     file: null,
     recurring: false,
     frequency: '',
+    toWalletId: '',
   });
 
+
   useEffect(() => {
+    if (selected?.isMirror) return; // ❌ Do not allow editing mirrored transactions
+
     if (selected) {
       setForm({
         category: selected.category || '',
@@ -41,12 +48,15 @@ const TransactionForm = () => {
         file: null,
         recurring: selected.recurring || false,
         frequency: selected.frequency || '',
+        toWalletId: selected.toWalletId?._id || selected.toWalletId || '',
       });
       setFilePreview(
         selected.fileUrl ? `http://localhost:5000/${selected.fileUrl}` : null
       );
     }
   }, [selected]);
+
+  if (userRole === 'viewer') return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -78,12 +88,12 @@ const TransactionForm = () => {
     formData.append('walletId', walletId);
     formData.append('tags', form.tags);
     formData.append('recurring', form.recurring);
-    
-    // ✅ Only append frequency if recurring is true
     if (form.recurring && form.frequency) {
       formData.append('frequency', form.frequency);
     }
-
+    if (form.type === 'transfer' && form.toWalletId) {
+      formData.append('toWalletId', form.toWalletId);
+    }
     if (form.file) {
       formData.append('file', form.file);
     }
@@ -106,6 +116,7 @@ const TransactionForm = () => {
         file: null,
         recurring: false,
         frequency: '',
+        toWalletId: '',
       });
       setFilePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -114,6 +125,14 @@ const TransactionForm = () => {
       alert(err.data?.message || 'Failed to submit transaction.');
     }
   };
+
+  if (selected?.isMirror) {
+    return (
+      <div className="p-4 text-sm text-red-500 border border-red-300 rounded shadow bg-white">
+        ⚠️ This is a mirrored transfer transaction and cannot be edited.
+      </div>
+    );
+  }
 
   return (
     <form
@@ -147,6 +166,27 @@ const TransactionForm = () => {
         <option value="expense">Expense</option>
         <option value="transfer">Transfer</option>
       </select>
+
+      {/* Destination wallet only for transfer */}
+      {form.type === 'transfer' && (
+        <select
+          name="toWalletId"
+          value={form.toWalletId}
+          onChange={handleChange}
+          className="border p-2 rounded"
+          required
+        >
+          <option value="">Select Destination Wallet</option>
+          {wallets
+            .filter((w) => w._id !== walletId)
+            .map((w) => (
+              <option key={w._id} value={w._id}>
+                {w.name}
+              </option>
+            ))}
+        </select>
+      )}
+
       <input
         name="description"
         placeholder="Description"
@@ -160,6 +200,7 @@ const TransactionForm = () => {
         value={form.date}
         onChange={handleChange}
         className="border p-2 rounded"
+        max={new Date().toISOString().split("T")[0]}
         required
       />
       <input
@@ -200,7 +241,7 @@ const TransactionForm = () => {
         )}
       </div>
 
-      {/* ✅ Recurring Section */}
+      {/* Recurring */}
       <div className="md:col-span-2">
         <label className="flex items-center gap-2 mb-2">
           <input
@@ -242,3 +283,4 @@ const TransactionForm = () => {
 };
 
 export default TransactionForm;
+
