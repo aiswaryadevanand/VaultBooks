@@ -180,6 +180,7 @@ exports.getWalletDetailsWithRoleCheck = async (req, res) => {
     return res.json({
       message: `✅ Access granted to wallet as ${req.userRole}`,
       wallet,
+      userRole: req.userRole
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch wallet info', details: err.message });

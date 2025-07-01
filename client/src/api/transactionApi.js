@@ -39,12 +39,12 @@ export const transactionApi = createApi({
       invalidatesTags: ['Transaction'],
     }),
     deleteTransaction: builder.mutation({
-      query: (id) => ({
-        url: `/transactions/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Transaction'],
-    }),
+  query: ({ id, walletId }) => ({
+    url: `/transactions/${id}?walletId=${walletId}`,
+    method: 'DELETE',
+  }),
+  invalidatesTags: ['Transaction'],
+}),
   }),
 });
 

@@ -155,10 +155,11 @@ const updateTransaction = async (req, res) => {
 const deleteTransaction = async (req, res) => {
   const userId = req.user.userId;
   const { id } = req.params;
+  console.log('👉 DELETE called with ID:', req.params.id);
+console.log('👉 Authenticated user:', req.user);
 
   try {
-    const transaction = await Transaction.findOne({ _id: id, userId });
-    if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
+    const transaction = await Transaction.findById(id);
 
     if (transaction.type === 'transfer') {
       const mirrorTx = await Transaction.findOne({
@@ -178,7 +179,10 @@ const deleteTransaction = async (req, res) => {
     }
 
     await transaction.deleteOne();
+    
+
     res.json({ message: 'Transaction deleted' });
+    
   } catch (error) {
     console.error('Delete transaction error:', error);
     res.status(400).json({ error: error.message });

@@ -7,7 +7,8 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { clearSelectedTransaction } from '../../redux/slices/transactionSlice';
 
-const TransactionForm = () => {
+const TransactionForm = ({userRole}) => {
+  
   const dispatch = useDispatch();
   const selected = useSelector((state) => state.transactions.selectedTransaction);
   const walletId = useSelector((state) => state.wallets.selectedWallet?._id);
@@ -32,6 +33,7 @@ const TransactionForm = () => {
     toWalletId: '',
   });
 
+
   useEffect(() => {
     if (selected?.isMirror) return; // ❌ Do not allow editing mirrored transactions
 
@@ -53,6 +55,8 @@ const TransactionForm = () => {
       );
     }
   }, [selected]);
+
+  if (userRole === 'viewer') return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
