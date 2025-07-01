@@ -39,12 +39,12 @@ function Login() {
       setMessage(err.response?.data?.message || 'Login failed');
     }
   };
-  const token=useSelector((state)=> state.auth.token);
-  useEffect(() => {
-  if (token) {
-    navigate('/wallets-list', { replace: true }); // 🚫 prevents back to login
-  }
-}, [token, navigate]);
+//   const token=useSelector((state)=> state.auth.token);
+//   useEffect(() => {
+//   if (window.location.pathname === "/login" && token) {
+//     navigate('/wallets-list', { replace: true }); // 🚫 prevents back to login
+//   }
+// }, [token, navigate]);
 
   return (
     <div className="flex h-screen">
