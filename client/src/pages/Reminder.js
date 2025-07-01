@@ -201,6 +201,7 @@ const Reminder = () => {
                         onClick={async () => {
                           await updateReminder(reminder._id, {
                             status: "done",
+                            walletId, 
                           });
                           fetchReminders();
                         }}
