@@ -1,4 +1,5 @@
 
+
 const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 
@@ -74,7 +75,11 @@ const createTransaction = async (req, res) => {
     const saved = await transaction.save();
 
     if (type === 'expense') {
-      const budget = await Budget.findOne({ walletId, category, userId });
+      const budget = await Budget.findOne({
+        walletId,
+        userId,
+        category: { $regex: new RegExp(`^${category}$`, 'i') },
+      });
       if (budget) {
         budget.spent += amount;
         await budget.save();
@@ -102,12 +107,17 @@ const updateTransaction = async (req, res) => {
   try {
     const existing = await Transaction.findOne({ _id: transactionId, userId });
     if (!existing) return res.status(404).json({ message: 'Transaction not found' });
+
     if (existing.isMirror) {
       return res.status(400).json({ message: 'Cannot edit mirrored transaction directly' });
     }
 
     if (existing.type === 'expense') {
-      const budget = await Budget.findOne({ walletId: existing.walletId, category: existing.category, userId });
+      const budget = await Budget.findOne({
+        walletId: existing.walletId,
+        userId,
+        category: { $regex: new RegExp(`^${existing.category}$`, 'i') },
+      });
       if (budget) {
         budget.spent = Math.max(0, budget.spent - existing.amount);
         await budget.save();
@@ -125,7 +135,11 @@ const updateTransaction = async (req, res) => {
     );
 
     if (updatedTransaction.type === 'expense') {
-      const budget = await Budget.findOne({ walletId, category, userId });
+      const budget = await Budget.findOne({
+        walletId,
+        userId,
+        category: { $regex: new RegExp(`^${category}$`, 'i') },
+      });
       if (budget) {
         budget.spent += updatedTransaction.amount;
         await budget.save();
@@ -134,12 +148,18 @@ const updateTransaction = async (req, res) => {
 
     if (updatedTransaction.type === 'transfer') {
       await Transaction.findOneAndUpdate({
-        userId, type: 'transfer', isMirror: true,
-        amount: existing.amount, date: existing.date, category: existing.category,
-        walletId: existing.toWalletId, toWalletId: existing.walletId,
+        userId,
+        type: 'transfer',
+        isMirror: true,
+        amount: existing.amount,
+        date: existing.date,
+        category: existing.category,
+        walletId: existing.toWalletId,
+        toWalletId: existing.walletId,
       }, {
         category, amount, note, date, tags,
-        walletId: toWalletId, toWalletId: walletId,
+        walletId: toWalletId,
+        toWalletId: walletId,
         recurring, frequency, nextDate,
         ...(fileUrl && { fileUrl }),
       });
@@ -156,22 +176,31 @@ const deleteTransaction = async (req, res) => {
   const userId = req.user.userId;
   const { id } = req.params;
   console.log('👉 DELETE called with ID:', req.params.id);
-console.log('👉 Authenticated user:', req.user);
+  console.log('👉 Authenticated user:', req.user);
 
   try {
     const transaction = await Transaction.findById(id);
 
     if (transaction.type === 'transfer') {
       const mirrorTx = await Transaction.findOne({
-        userId, type: 'transfer', isMirror: !transaction.isMirror,
-        amount: transaction.amount, date: transaction.date, category: transaction.category,
-        walletId: transaction.toWalletId, toWalletId: transaction.walletId,
+        userId,
+        type: 'transfer',
+        isMirror: !transaction.isMirror,
+        amount: transaction.amount,
+        date: transaction.date,
+        category: transaction.category,
+        walletId: transaction.toWalletId,
+        toWalletId: transaction.walletId,
       });
       if (mirrorTx) await mirrorTx.deleteOne();
     }
 
     if (transaction.type === 'expense') {
-      const budget = await Budget.findOne({ walletId: transaction.walletId, category: transaction.category, userId });
+      const budget = await Budget.findOne({
+        walletId: transaction.walletId,
+        userId,
+        category: { $regex: new RegExp(`^${transaction.category}$`, 'i') },
+      });
       if (budget) {
         budget.spent = Math.max(0, budget.spent - transaction.amount);
         await budget.save();
@@ -179,10 +208,7 @@ console.log('👉 Authenticated user:', req.user);
     }
 
     await transaction.deleteOne();
-    
-
     res.json({ message: 'Transaction deleted' });
-    
   } catch (error) {
     console.error('Delete transaction error:', error);
     res.status(400).json({ error: error.message });
