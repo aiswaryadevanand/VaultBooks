@@ -1,6 +1,9 @@
+
+
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import toast, { Toaster, useToasterStore } from 'react-hot-toast';
 import {
   getBudgets,
   createBudget,
@@ -19,12 +22,15 @@ const Budget = () => {
   const [editCategory, setEditCategory] = useState('');
   const [editLimit, setEditLimit] = useState('');
 
+  const { toasts } = useToasterStore();
+  const isToastVisible = toasts.some((t) => t.visible);
+
   const fetchBudgets = async () => {
     try {
       const res = await getBudgets(walletId);
       setBudgets(res.data);
     } catch (err) {
-      alert('Failed to fetch budgets');
+      toast.error('Failed to fetch budgets');
     }
   };
 
@@ -34,48 +40,102 @@ const Budget = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    const normalizedCategory = category.trim().toLowerCase();
+
+    const exists = budgets.some(
+      (b) => b.category?.trim().toLowerCase() === normalizedCategory
+    );
+    if (exists) {
+      toast.error('Budget for this category already exists.');
+      return;
+    }
+
     try {
-      await createBudget({ walletId, category, limit, spent: 0 });
+      await createBudget({
+        walletId,
+        category: normalizedCategory,
+        limit,
+        spent: 0,
+      });
       setCategory('');
       setLimit('');
+      toast.success(' Budget added');
       fetchBudgets();
     } catch (err) {
-      alert('Failed to create budget');
+      toast.error('Failed to create budget');
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteBudget(id, { walletId });
+      toast.success(' Budget deleted');
       fetchBudgets();
     } catch (err) {
-      alert('Failed to delete budget');
+      toast.error('Failed to delete budget');
     }
   };
 
   const handleEdit = (budget) => {
-    if (userRole === 'viewer') return; // ⛔ viewers can't edit
+    if (userRole === 'viewer') return;
     setEditId(budget._id);
     setEditCategory(budget.category);
     setEditLimit(budget.limit);
   };
 
   const handleUpdate = async (id) => {
+    const normalizedEditCategory = editCategory.trim().toLowerCase();
+
+    const duplicate = budgets.some(
+      (b) =>
+        b._id !== id &&
+        b.category?.trim().toLowerCase() === normalizedEditCategory
+    );
+    if (duplicate) {
+      toast.error('Another budget with this category already exists.');
+      return;
+    }
+
     try {
       await updateBudget(id, {
         walletId,
-        category: editCategory,
+        category: normalizedEditCategory,
         limit: editLimit,
       });
       setEditId(null);
+      toast.success(' Budget updated');
       fetchBudgets();
     } catch (err) {
-      alert('Failed to update budget');
+      toast.error('Failed to update budget');
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="max-w-2xl mx-auto p-4 relative">
+      {isToastVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity" />
+      )}
+
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          className:
+            'bg-white text-black px-6 py-4 rounded-xl shadow-lg border border-gray-200 text-center font-medium',
+          style: {
+            fontSize: '1rem',
+            maxWidth: '90vw',
+            zIndex: 50,
+          },
+        }}
+        containerStyle={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+
       <h2 className="text-2xl font-bold mb-4 text-center">💰 Budget Tracker</h2>
 
       {['owner', 'accountant'].includes(userRole) && (
@@ -158,7 +218,6 @@ const Budget = () => {
                     ₹{budget.spent} / ₹{budget.limit}
                   </p>
 
-                  {/* Progress Bar */}
                   <div className="w-full bg-gray-300 h-3 rounded overflow-hidden mt-1">
                     <div
                       className={`h-full transition-all duration-300 ${
