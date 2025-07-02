@@ -16,6 +16,8 @@ const Reports = () => {
   const walletId = selectedWallet?._id;
 
   const [view, setView] = useState('monthly');
+  const [selectedMonth, setSelectedMonth] = useState('');
+
   const [chartData, setChartData] = useState(null);
   const [summary, setSummary] = useState(null);
   const [pieData, setPieData] = useState({ labels: [], data: [] });
@@ -30,9 +32,9 @@ const Reports = () => {
     setLoading(true);
 
     Promise.all([
-      fetchIncomeVsExpense(walletId, view),
-      fetchExpenseByCategory(walletId),
-      fetchWalletPerformance(),
+      fetchIncomeVsExpense(walletId, view, selectedMonth),
+      fetchExpenseByCategory(walletId, selectedMonth),
+      fetchWalletPerformance(selectedMonth),
     ])
       .then(([lineRes, pieRes, walletRes]) => {
         const { labels, incomeData, expenseData, summary } = lineRes.data;
@@ -52,73 +54,87 @@ const Reports = () => {
         setError('Failed to load report data');
       })
       .finally(() => setLoading(false));
-  }, [walletId, view]);
+  }, [walletId, view, selectedMonth]);
 
   return (
     <div className="p-6 space-y-6">
-      {/* 🔧 Filters */}
-      <div className="flex items-center gap-4">
-        <label className="font-semibold">View:</label>
-        <select
-          value={view}
-          onChange={(e) => setView(e.target.value)}
+      {/* 🔍 Month Filter */}
+      <div className="flex justify-start items-center gap-4">
+        <label className="font-medium text-sm">Month:</label>
+        <input
+          type="month"
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
           className="border px-2 py-1 rounded"
-        >
-          <option value="monthly">Monthly</option>
-          <option value="weekly">Weekly</option>
-        </select>
+        />
       </div>
 
-      {/* 📈 Income vs Expense */}
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Income vs Expense Trends</h2>
-
-        {summary && (
-          <div className="bg-gray-100 p-4 rounded-md shadow-sm w-fit mb-4">
-            <p className="text-green-600 font-semibold">Total Income: ₹{summary.totalIncome}</p>
-            <p className="text-red-500 font-semibold">Total Expense: ₹{summary.totalExpense}</p>
+      {/* 📊 Chart Grid */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* 📈 Income vs Expense */}
+        <div className="bg-white p-4 rounded-xl shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold">Income vs Expense</h2>
+            <select
+              value={view}
+              onChange={(e) => setView(e.target.value)}
+              className="border px-2 py-1 rounded text-sm"
+            >
+              <option value="monthly">Monthly</option>
+              <option value="weekly">Weekly</option>
+            </select>
           </div>
-        )}
 
-        {chartData?.labels?.length > 0 && (
-          <div ref={chartRef}>
-            <IncomeExpenseLineChart
-              labels={chartData.labels}
-              incomeData={chartData.incomeData}
-              expenseData={chartData.expenseData}
-            />
-          </div>
-        )}
-      </div>
+          {summary && (
+            <div className="text-sm mb-3">
+              <p className="text-green-600">Income: ₹{summary.totalIncome}</p>
+              <p className="text-red-500">Expense: ₹{summary.totalExpense}</p>
+            </div>
+          )}
 
-      {/* 🥧 Expense by Category */}
-      {pieData.labels.length > 0 && (
-        <div>
-          <h3 className="text-xl font-semibold mt-6 mb-2">Expense Breakdown by Category</h3>
-          <CategoryExpensePieChart labels={pieData.labels} data={pieData.data} />
+          {chartData?.labels?.length > 0 && (
+            <div ref={chartRef}>
+              <IncomeExpenseLineChart
+                labels={chartData.labels}
+                incomeData={chartData.incomeData}
+                expenseData={chartData.expenseData}
+              />
+            </div>
+          )}
         </div>
-      )}
 
-      {/* 📊 Wallet Performance */}
-      {walletData.labels.length > 0 && (
-        <div>
-          <h3 className="text-xl font-semibold mt-6 mb-2">Wallet Performance</h3>
+        {/* 🥧 Expense by Category */}
+        <div className="bg-white p-4 rounded-xl shadow-sm">
+          <h2 className="text-lg font-semibold mb-2">Expense Breakdown by Category</h2>
+          {pieData.labels.length > 0 && (
+            <CategoryExpensePieChart labels={pieData.labels} data={pieData.data} />
+          )}
+        </div>
+      </div>
+
+      {/* 📊 Wallet Performance (Full width) */}
+      <div className="bg-white p-4 rounded-xl shadow-sm">
+        <h2 className="text-lg font-semibold mb-2">Wallet Performance</h2>
+        {walletData.labels.length > 0 && (
           <WalletPerformanceChart
             labels={walletData.labels}
             incomeData={walletData.income}
             expenseData={walletData.expense}
           />
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* 📤 Export Buttons at Bottom */}
+      {/* 📤 Export Buttons */}
       {(chartData || pieData.labels.length > 0 || walletData.labels.length > 0) && (
-        <div className="mt-8">
+        <div className="flex flex-col items-center mt-6">
+          <p className="font-medium mb-2">Export Reports</p>
           <ExportButtons
             lineChart={chartData}
             pieChart={pieData}
             walletChart={walletData}
             summary={summary}
+            selectedMonth={selectedMonth}
+            view={view}
           />
         </div>
       )}

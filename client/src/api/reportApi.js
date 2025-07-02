@@ -16,18 +16,19 @@ API.interceptors.request.use((req) => {
 });
 
 // ✅ Line Chart
-export const fetchIncomeVsExpense = (walletId, view = 'monthly') =>
+export const fetchIncomeVsExpense = (walletId, view = 'monthly', month) =>
   API.get('/reports/income-vs-expense', {
-    params: { walletId, view },
+    params: { walletId, view, month },
   });
 
-// ✅ Pie Chart
-export const fetchExpenseByCategory = (walletId) =>
+// ✅ Pie Chart (removed category param)
+export const fetchExpenseByCategory = (walletId, month) =>
   API.get('/reports/expense-by-category', {
-    params: { walletId },
+    params: { walletId, month },
   });
 
 // ✅ Bar Chart - Wallet Performance
-export const fetchWalletPerformance = () =>
-  API.get('/reports/wallet-performance');
-
+export const fetchWalletPerformance = (month) =>
+  API.get('/reports/wallet-performance', {
+    params: { month },
+  });
