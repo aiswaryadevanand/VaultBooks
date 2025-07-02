@@ -51,8 +51,8 @@ const DashboardLayout = () => {
   const navItems = walletId
     ? [
       { label: 'Dashboard', icon: <FaTachometerAlt />, path: `/wallets/${walletId}` },
-      { label: 'Transactions', icon: <FaExchangeAlt />, path: `/wallets/${walletId}/transactions` },
       { label: 'Budgets', icon: <FaChartPie />, path: `/wallets/${walletId}/budgets` },
+      { label: 'Transactions', icon: <FaExchangeAlt />, path: `/wallets/${walletId}/transactions` },
       { label: 'Reminders', icon: <FaBell />, path: `/wallets/${walletId}/reminders`, badge: reminderCount },
       { label: 'Reports', icon: <FaFileAlt />, path: `/wallets/${walletId}/reports` },
       { label: 'Audit Logs', icon: <FaScroll />, path: `/wallets/${walletId}/audit-logs` },

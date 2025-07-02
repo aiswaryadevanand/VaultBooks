@@ -12,6 +12,7 @@ import WalletListPage from "./pages/WalletListPage"; // First page after login
 import Wallets from "./pages/Wallets"; // Wallet Create/Edit page
 import Reminder from "./pages/Reminder";
 import Profile from "./pages/Profile";
+import ResetPassword from "./pages/ResetPassword";
 
 
 // Dashboard Layout and Inner Pages
@@ -69,6 +70,16 @@ return (
     </PrivateRoute>
   }
 />
+
+<Route
+  path="/reset-password"
+  element={
+    <PrivateRoute>
+      <ResetPassword />
+    </PrivateRoute>
+  }
+/>
+
 
     {/* Wallet-Specific Dashboard */}
     <Route

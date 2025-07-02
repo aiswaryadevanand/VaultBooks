@@ -10,8 +10,9 @@ const{
     updateWallet,
     deleteWallet,
     inviteUser,
-    getTeamMembers
-    
+    getTeamMembers,
+    updateMemberRole,
+    removeMember
 }=require('../controllers/walletController');
 
 // Middleware to check if user is authenticated
@@ -25,6 +26,9 @@ router.delete('/:id', deleteWallet);
 router.post('/:walletId/invite', inviteUser);
 router.get('/:walletId/team', getTeamMembers);
 router.get('/:walletId/secure',checkWalletRole(['owner', 'accountant']), getWalletDetailsWithRoleCheck); // Get wallet details with role check
+router.put('/:walletId/members/:memberId', checkWalletRole(['owner']), updateMemberRole);
+router.delete('/:walletId/members/:memberId', checkWalletRole(['owner']), removeMember);
+
 
 
 module.exports = router;
