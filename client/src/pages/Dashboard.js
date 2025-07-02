@@ -61,7 +61,7 @@ const DashboardLayout = () => {
       <div className="flex flex-1 overflow-hidden">
         <div className="w-64 bg-gray-100 text-black flex flex-col justify-between border-r border-gray-300 p-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-blue-700 mb-10 tracking-wide">VaultBooks</h1>
+            {/* <h1 className="text-2xl font-extrabold text-blue-700 mb-10 tracking-wide">VaultBooks</h1> */}
             {navItems.map(({ label, icon, path, badge }) => {
               const isActive = location.pathname === path;
               return (
