@@ -16,3 +16,5 @@ export const updateReminder = (id, data) =>
   API.put(`/reminders/${id}`, data);
 export const deleteReminder = (id, walletId) =>
   API.delete(`/reminders/${id}`, { data: { walletId } });
+export const getDueReminders = (walletId) =>
+  API.get(`/reminders/due?walletId=${walletId}`);

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { CheckCircle, XCircle, AlertCircle, Clock } from "lucide-react";
+import { getDueReminders } from "../api/reminderAPI";
 
 const DashboardHome = () => {
   const { selectedWallet, userRole } = useSelector((state) => state.wallets);
@@ -13,6 +14,7 @@ const DashboardHome = () => {
   const [budgets, setBudgets] = useState([]);
   const [reminders, setReminders] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [dueCount, setDueCount] = useState(0);
 
   const walletId = selectedWallet?._id;
 
@@ -23,14 +25,28 @@ const DashboardHome = () => {
 
     const fetchData = async () => {
       try {
-        const [budgetRes, reminderRes, txRes] = await Promise.all([
+        const [budgetRes, reminderRes, txRes, dueReminderRes] = await Promise.all([
           axios.get(`http://localhost:5000/api/budgets/${walletId}`, config),
           axios.get(`http://localhost:5000/api/reminders/${walletId}`, config),
           axios.get(`http://localhost:5000/api/transactions?walletId=${walletId}`, config),
+          getDueReminders(walletId),
         ]);
+
         setBudgets(budgetRes.data || []);
         setReminders(reminderRes.data || []);
         setTransactions(txRes.data || []);
+
+        // ✅ Count both overdue and upcoming reminders
+        const now = new Date();
+        const in7Days = new Date();
+        in7Days.setDate(now.getDate() + 7);
+
+        const count = dueReminderRes.data.filter((r) => {
+          const due = new Date(r.dueDate);
+          return due <= in7Days && r.status !== "done";
+        }).length;
+
+        setDueCount(count);
       } catch (err) {
         console.error("Dashboard load error", err);
       }
@@ -42,6 +58,7 @@ const DashboardHome = () => {
   const totalIncome = transactions
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
+
   const totalExpense = transactions
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
@@ -55,6 +72,19 @@ const DashboardHome = () => {
     if (spent > limit) return <XCircle className="text-red-500 w-5 h-5" />;
     return <CheckCircle className="text-green-500 w-5 h-5" />;
   };
+
+  const now = new Date();
+  const in7Days = new Date();
+  in7Days.setDate(now.getDate() + 7);
+
+  const overdueReminders = reminders.filter(
+    (r) => new Date(r.dueDate) < now && r.status !== "done"
+  );
+
+  const upcomingReminders = reminders.filter((r) => {
+    const due = new Date(r.dueDate);
+    return due >= now && due <= in7Days && r.status !== "done";
+  });
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -97,7 +127,7 @@ const DashboardHome = () => {
                     <div className="flex items-center gap-2 mt-1">
                       <div className="w-full bg-gray-200 rounded h-2">
                         <div
-                          className={`h-2 rounded ${percent > 100 ? 'bg-red-500' : 'bg-blue-500'}`}
+                          className={`h-2 rounded ${percent > 100 ? "bg-red-500" : "bg-blue-500"}`}
                           style={{ width: `${percent}%` }}
                         ></div>
                       </div>
@@ -136,31 +166,55 @@ const DashboardHome = () => {
           )}
         </div>
 
-        {/* Upcoming / Overdue Reminders */}
+        {/* Reminders */}
         <div className="bg-white p-4 shadow rounded border">
-          <h3 className="text-lg font-semibold mb-3">Upcoming / Overdue Reminders</h3>
-          {reminders.length === 0 ? (
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            Reminders
+            {dueCount > 0 && (
+              <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                {dueCount}
+              </span>
+            )}
+          </h3>
+
+          {overdueReminders.length === 0 && upcomingReminders.length === 0 ? (
             <p className="text-gray-500 text-sm">No reminders scheduled.</p>
           ) : (
-            <ul className="space-y-2 text-sm">
-              {reminders.map((r) => {
-                const due = new Date(r.dueDate);
-                const isOverdue = due < new Date();
-                return (
-                  <li key={r._id} className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      {isOverdue ? (
-                        <AlertCircle className="text-red-500 w-4 h-4" />
-                      ) : (
-                        <Clock className="text-yellow-500 w-4 h-4" />
-                      )}
-                      <span>{r.description}</span>
-                    </div>
-                    <span>{due.toLocaleDateString()}</span>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="space-y-3 text-sm">
+              {overdueReminders.length > 0 && (
+                <div>
+                  <h4 className="text-red-600 font-semibold mb-1">🔴 Overdue</h4>
+                  <ul className="space-y-2">
+                    {overdueReminders.map((r) => (
+                      <li key={r._id} className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="text-red-500 w-4 h-4" />
+                          <span>{r.description}</span>
+                        </div>
+                        <span>{new Date(r.dueDate).toLocaleDateString("en-GB")}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {upcomingReminders.length > 0 && (
+                <div>
+                  <h4 className="text-yellow-600 font-semibold mb-1">🟡 Upcoming (Next 7 Days)</h4>
+                  <ul className="space-y-2">
+                    {upcomingReminders.map((r) => (
+                      <li key={r._id} className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <Clock className="text-yellow-500 w-4 h-4" />
+                          <span>{r.description}</span>
+                        </div>
+                        <span>{new Date(r.dueDate).toLocaleDateString("en-GB")}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

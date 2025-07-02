@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
+import { getDueReminders } from '../api/reminderAPI';
 
 import {
   FaTachometerAlt,
@@ -20,14 +21,39 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [reminderCount, setReminderCount] = useState(0);
+
   const walletId = selectedWallet?._id;
+
+  useEffect(() => {
+    const fetchReminderCount = async () => {
+      if (!walletId) return;
+      try {
+        const res = await getDueReminders(walletId);
+        const now = new Date();
+        const in7Days = new Date();
+        in7Days.setDate(now.getDate() + 7);
+
+        const count = res.data.filter((r) => {
+          const due = new Date(r.dueDate);
+          return due <= in7Days && r.status !== 'done';
+        }).length;
+
+        setReminderCount(count);
+      } catch (err) {
+        console.error('Failed to fetch reminder count:', err.message);
+      }
+    };
+
+    fetchReminderCount();
+  }, [walletId]);
 
   const navItems = walletId
     ? [
         { label: 'Dashboard', icon: <FaTachometerAlt />, path: `/wallets/${walletId}` },
         { label: 'Transactions', icon: <FaExchangeAlt />, path: `/wallets/${walletId}/transactions` },
         { label: 'Budgets', icon: <FaChartPie />, path: `/wallets/${walletId}/budgets` },
-        { label: 'Reminders', icon: <FaBell />, path: `/wallets/${walletId}/reminders` },
+        { label: 'Reminders', icon: <FaBell />, path: `/wallets/${walletId}/reminders`, badge: reminderCount },
         { label: 'Reports', icon: <FaFileAlt />, path: `/wallets/${walletId}/reports` },
         { label: 'Audit Logs', icon: <FaScroll />, path: `/wallets/${walletId}/audit-logs` },
         { label: 'Team', icon: <FaUsers />, path: `/wallets/${walletId}/team` }
@@ -46,17 +72,24 @@ const DashboardLayout = () => {
         <div>
           <h1 className="text-3xl font-extrabold text-blue-700 mb-10 tracking-wide">VaultBooks</h1>
 
-          {navItems.map(({ label, icon, path }) => {
+          {navItems.map(({ label, icon, path, badge }) => {
             const isActive = location.pathname === path;
             return (
               <button
                 key={label}
                 onClick={() => navigate(path)}
-                className={`flex items-center gap-4 w-full text-left py-2 px-3 rounded transition ${
+                className={`relative flex items-center justify-between gap-2 w-full text-left py-2 px-3 rounded transition ${
                   isActive ? 'bg-blue-100 text-blue-800 font-semibold' : 'hover:bg-gray-200 text-black'
                 }`}
               >
-                {icon} {label}
+                <div className="flex items-center gap-3">
+                  {icon} {label}
+                </div>
+                {badge > 0 && label === 'Reminders' && (
+                  <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {badge}
+                  </span>
+                )}
               </button>
             );
           })}
