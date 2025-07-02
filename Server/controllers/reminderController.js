@@ -1,4 +1,3 @@
-
 const Reminder = require('../models/Reminder');
 const logAudit = require('../utils/logAudit');
 
@@ -78,5 +77,29 @@ exports.deleteReminder = async (req, res) => {
     res.json({ message: 'Reminder deleted' });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+exports.getDueReminders = async (req, res) => {
+  const { walletId } = req.query;
+  const userId = req.user.userId;
+
+  try {
+    const now = new Date();
+    const next7Days = new Date();
+    next7Days.setDate(now.getDate() + 7);
+
+    const reminders = await Reminder.find({
+      walletId,
+      dueDate: { $lte: next7Days },
+      status: { $ne: 'done' },
+    }).sort({ dueDate: 1 });
+
+    res.json(reminders);
+  } catch (err) {
+    console.error("🚫 getDueReminders error:", err.message);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Failed to fetch due reminders' });
+    }
   }
 };
