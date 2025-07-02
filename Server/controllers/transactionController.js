@@ -2,6 +2,9 @@
 const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 const logAudit = require('../utils/logAudit');
+const { models } = require('mongoose');
+const Wallet=require('../models/Wallet');
+const mongoose=require('mongoose')
 
 const calculateNextDate = (date, frequency) => {
   const next = new Date(date);
@@ -16,22 +19,25 @@ const calculateNextDate = (date, frequency) => {
 
 const getTransactions = async (req, res) => {
   try {
-    const userId = req.user.userId;
     const { walletId } = req.query;
-    const filter = { userId };
-    if (walletId) filter.walletId = walletId;
 
-    const transactions = await Transaction.find(filter)
-      .populate({ path: 'walletId', select: 'name type' })
-      .populate({ path: 'toWalletId', select: 'name type' })
-      .sort({ createdAt: -1 });
+    if (!walletId || !mongoose.Types.ObjectId.isValid(walletId)) {
+      return res.status(400).json({ message: 'Invalid or missing walletId' });
+    }
 
-    res.json(transactions);
-  } catch (error) {
-    console.error('Get transactions error:', error);
-    res.status(500).json({ error: 'Server Error' });
+    const wallet = await Wallet.findById(walletId);
+    if (!wallet) {
+      return res.status(404).json({ message: 'Wallet not found' });
+    }
+
+    const transactions = await Transaction.find({ walletId });
+    res.status(200).json(transactions);
+  } catch (err) {
+    console.error('Error in getTransactions:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 const createTransaction = async (req, res) => {
   const userId = req.user.userId;
