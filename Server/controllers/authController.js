@@ -73,3 +73,26 @@ exports.getLatestUser = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch latest user', error: error.message });
   }
 };
+
+// controllers/authController.js
+
+// ... existing code
+exports.resetPassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const isMatch = await user.comparePassword(oldPassword);
+    if (!isMatch) return res.status(400).json({ error: "Old password is incorrect" });
+
+    user.password = newPassword; // 🔐 Pre-save hook will hash it
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+     console.error("❌ Password reset error:", err.message);
+    res.status(500).json({ error: "Password reset failed", details: err.message });
+  }
+};
