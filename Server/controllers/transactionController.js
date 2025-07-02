@@ -1,3 +1,4 @@
+
 const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 const logAudit = require('../utils/logAudit');
@@ -69,7 +70,13 @@ const createTransaction = async (req, res) => {
         userId,
         walletId,
         action: 'create-transaction-transfer',
-        details: { fromTx, toTx }
+        details: {
+          fromWallet: walletId,
+          toWallet: toWalletId,
+          amount,
+          category,
+          note
+        }
       });
 
       return res.status(201).json({ from: fromTx, to: toTx });
@@ -98,7 +105,7 @@ const createTransaction = async (req, res) => {
       userId,
       walletId,
       action: 'create-transaction',
-      details: { category, amount, type, note, date, tags }
+      details: { category, amount, type, note }
     });
 
     res.status(201).json(saved);
@@ -129,7 +136,6 @@ const updateTransaction = async (req, res) => {
       return res.status(400).json({ message: 'Cannot edit mirrored transaction directly' });
     }
 
-    // Rollback old budget
     if (existing.type === 'expense') {
       const oldBudget = await Budget.findOne({
         walletId: existing.walletId,
@@ -143,17 +149,8 @@ const updateTransaction = async (req, res) => {
     }
 
     const updatedFields = {
-      category,
-      amount: numericAmount,
-      type,
-      note,
-      date,
-      tags,
-      walletId,
-      toWalletId,
-      recurring,
-      frequency,
-      nextDate
+      category, amount: numericAmount, type, note, date, tags,
+      walletId, toWalletId, recurring, frequency, nextDate
     };
     if (fileUrl) updatedFields.fileUrl = fileUrl;
 
@@ -163,7 +160,6 @@ const updateTransaction = async (req, res) => {
       { new: true }
     );
 
-    // Apply new budget
     if (updatedTransaction.type === 'expense') {
       const newBudget = await Budget.findOne({
         walletId,
@@ -176,7 +172,6 @@ const updateTransaction = async (req, res) => {
       }
     }
 
-    // Update mirror transaction
     if (updatedTransaction.type === 'transfer') {
       await Transaction.findOneAndUpdate({
         userId,
@@ -188,16 +183,9 @@ const updateTransaction = async (req, res) => {
         walletId: existing.toWalletId,
         toWalletId: existing.walletId,
       }, {
-        category,
-        amount: numericAmount,
-        note,
-        date,
-        tags,
-        walletId: toWalletId,
-        toWalletId: walletId,
-        recurring,
-        frequency,
-        nextDate,
+        category, amount: numericAmount, note, date, tags,
+        walletId: toWalletId, toWalletId: walletId,
+        recurring, frequency, nextDate,
         ...(fileUrl && { fileUrl }),
       });
     }
@@ -206,7 +194,7 @@ const updateTransaction = async (req, res) => {
       userId,
       walletId,
       action: 'update-transaction',
-      details: { transactionId, updatedFields }
+      details: { transactionId, category, amount, note }
     });
 
     res.json(updatedTransaction);

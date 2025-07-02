@@ -1,10 +1,9 @@
 
-
 const Transaction = require('../models/Transaction');
 const Wallet = require('../models/Wallet');
-const mongoose = require('mongoose');
+const logAudit = require('../utils/logAudit');
 
-// ✅ Utility: Get start and end dates of week
+// ✅ Utility: Get start and end dates of a week
 const getWeekRange = (date) => {
   const d = new Date(date);
   const day = d.getDay(); // 0 (Sun) - 6 (Sat)
@@ -67,7 +66,7 @@ exports.getIncomeVsExpense = async (req, res) => {
         const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
         weekStart.setDate(diff);
         const keyDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
-        key = keyDate.toISOString().split('T')[0]; // YYYY-MM-DD for sorting
+        key = keyDate.toISOString().split('T')[0];
         label = getWeekRange(date);
       } else {
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -92,6 +91,19 @@ exports.getIncomeVsExpense = async (req, res) => {
     const labels = sortedKeys.map(k => grouped[k].label);
     const incomeData = sortedKeys.map(k => grouped[k].income);
     const expenseData = sortedKeys.map(k => grouped[k].expense);
+
+    // ✅ Log audit
+    await logAudit({
+      userId,
+      walletId,
+      action: 'view-report',
+      details: {
+        viewType: view,
+        totalIncome,
+        totalExpense,
+        timeSpan: view === 'weekly' ? 'Weekly Overview' : 'Monthly Overview'
+      }
+    });
 
     res.json({
       labels,

@@ -2,6 +2,7 @@
 const Budget = require('../models/Budget');
 const Wallet = require('../models/Wallet');
 const Transaction = require('../models/Transaction');
+const logAudit = require('../utils/logAudit');
 
 const isAuthorizedForWallet = (wallet, userId) => {
   const userIdStr = userId.toString();
@@ -37,6 +38,13 @@ exports.createBudget = async (req, res) => {
       category: normalizedCategory,
       limit: Number(limit),
       spent,
+    });
+
+    await logAudit({
+      userId,
+      walletId,
+      action: 'create-budget',
+      details: { category: normalizedCategory, limit, spent }
     });
 
     res.status(201).json(budget);
@@ -77,11 +85,21 @@ exports.updateBudget = async (req, res) => {
     if (!wallet) return res.status(404).json({ message: 'Associated wallet not found' });
     if (!isAuthorizedForWallet(wallet, userId)) return res.status(403).json({ message: 'Unauthorized' });
 
+    const oldData = { ...budget.toObject() };
+
     if (category) budget.category = category.trim().toLowerCase();
     if (limit !== undefined) budget.limit = Number(limit);
     if (spent !== undefined) budget.spent = Number(spent);
 
     await budget.save();
+
+    await logAudit({
+      userId,
+      walletId: wallet._id,
+      action: 'update-budget',
+      details: { old: oldData, updated: { category, limit, spent } }
+    });
+
     res.status(200).json(budget);
   } catch (err) {
     console.error("💥 Error updating budget:", err);
@@ -102,6 +120,14 @@ exports.deleteBudget = async (req, res) => {
     if (!isAuthorizedForWallet(wallet, userId)) return res.status(403).json({ message: 'Unauthorized' });
 
     await Budget.findByIdAndDelete(id);
+
+    await logAudit({
+      userId,
+      walletId: wallet._id,
+      action: 'delete-budget',
+      details: { budgetId: id, category: budget.category, limit: budget.limit }
+    });
+
     res.status(200).json({ message: 'Budget deleted successfully' });
   } catch (err) {
     console.error("💥 Error deleting budget:", err);

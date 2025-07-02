@@ -1,36 +1,34 @@
-// import axios from 'axios';
 
-// export const fetchAuditLogs = async (filters = {}) => {
-//   const token = localStorage.getItem('token');
-//   const res = await axios.get('/api/audit-logs', {
-//     headers: { Authorization: `Bearer ${token}` },
-//     params: filters
-//   });
-//   return res.data;
-// };
-// src/api/auditAPI.js
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api', // 🔁 Make sure this points to your backend
+  baseURL: 'http://localhost:5000/api', // ✅ Update this if deploying
 });
 
-// Include token in requests
+// 🔐 Attach token to every request
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
 
-// Fetch audit logs with filters
+
 export const fetchAuditLogs = async (filters = {}) => {
   try {
-    const res = await API.get('/audit-logs', { params: filters });
+    const { walletId, action, date } = filters;
+    const params = {};
+    if (walletId) params.walletId = walletId;
+    if (action) params.action = action;
+    if (date) params.date = date;  // Send date to backend
+
+    const res = await API.get('/audit-logs', { params });
     return res.data;
   } catch (err) {
-    console.error('❌ Error fetching audit logs:', err);
+    console.error('❌ Error fetching audit logs:', err.response?.data || err.message);
     throw err;
   }
 };

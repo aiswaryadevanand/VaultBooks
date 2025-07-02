@@ -1,122 +1,120 @@
+
 import React, { useEffect, useState } from 'react';
 import { fetchAuditLogs } from '../api/auditAPI';
+import { useParams } from 'react-router-dom';
 
 const AuditLogs = () => {
+  const { walletId } = useParams();
   const [logs, setLogs] = useState([]);
-  const [filters, setFilters] = useState({
-    userId: '',
-    walletId: '',
-    action: '',
-    startDate: '',
-    endDate: ''
-  });
-
-  const handleChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
-  };
+  const [filters, setFilters] = useState({ action: '', date: '' });
 
   const loadLogs = async () => {
+    if (!walletId) return;
     try {
-      const data = await fetchAuditLogs(filters);
+      const data = await fetchAuditLogs({ walletId, ...filters });
       setLogs(data);
     } catch (err) {
-      console.error("❌ Failed to fetch logs", err.response?.data || err.message);
+      console.error("Failed to fetch logs", err);
       setLogs([]);
     }
   };
 
   const resetFilters = () => {
-    const cleared = {
-      userId: '',
-      walletId: '',
-      action: '',
-      startDate: '',
-      endDate: ''
-    };
-    setFilters(cleared);
+    setFilters({ action: '', date: '' });
     loadLogs();
   };
 
   useEffect(() => {
     loadLogs();
-  }, []);
+  }, [walletId]);
+
+  const getShortDetails = (details, action) => {
+    if (!details || typeof details !== 'object') return '-';
+
+    switch (action) {
+      case 'invite-user':
+        return `Invited Email: ${details.invitedEmail || '-'} | Role: ${details.role || '-'}`;
+
+      case 'create-reminder':
+        return `Description: ${details.description || '-'} | Due Date: ${details.dueDate ? new Date(details.dueDate).toLocaleDateString() : '-'}`;
+
+      case 'create-wallet':
+      case 'update-wallet':
+        return `Name: ${details.name || '-'} | Type: ${details.type || '-'}`;
+
+      case 'create-transaction':
+      case 'update-transaction':
+      case 'delete-transaction':
+        return `Amount: ₹${details.amount || '-'} | Category: ${details.category}`;
+
+      case 'create-transaction-transfer':
+        return `Transfer from ${details?.fromTx?.walletId || '-'} to ${details?.toTx?.walletId || '-'} | Amount: ₹${details?.fromTx?.amount || '-'}`;
+
+      default:
+        return Object.entries(details)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(' | ') || '-';
+    }
+  };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Audit Log Dashboard</h2>
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-3xl font-semibold text-gray-800 mb-6">🧾 Audit Log Viewer</h1>
 
-      {/* Filter Section */}
-      <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <input
-          type="text"
-          name="userId"
-          placeholder="User ID"
-          value={filters.userId}
-          onChange={handleChange}
-        />
-        <input
-          type="text"
-          name="walletId"
-          placeholder="Wallet ID"
-          value={filters.walletId}
-          onChange={handleChange}
-        />
+      {/* Filters */}
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <input
           type="text"
           name="action"
-          placeholder="Action"
+          placeholder="Action (e.g. create-wallet)"
           value={filters.action}
-          onChange={handleChange}
+          onChange={(e) => setFilters({ ...filters, action: e.target.value })}
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
         />
         <input
-          name="startDate"
           type="date"
-          value={filters.startDate}
-          onChange={handleChange}
+          name="date"
+          value={filters.date}
+          onChange={(e) => setFilters({ ...filters, date: e.target.value })}
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
         />
-        <input
-          name="endDate"
-          type="date"
-          value={filters.endDate}
-          onChange={handleChange}
-        />
-        <button onClick={loadLogs}>Filter</button>
-        <button onClick={resetFilters} style={{ backgroundColor: '#ccc' }}>Reset</button>
+        <div className="flex gap-2">
+          <button onClick={loadLogs} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+            Filter
+          </button>
+          <button onClick={resetFilters} className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md">
+            Reset
+          </button>
+        </div>
       </div>
 
-      {/* Log Table */}
+      {/* Logs Table */}
       {logs.length === 0 ? (
-        <p>No logs found.</p>
+        <p className="text-gray-600">No logs found for this wallet.</p>
       ) : (
-        <>
-          <p><strong>Total logs:</strong> {logs.length}</p>
-          <table border="1" cellPadding="10" cellSpacing="0" width="100%">
-            <thead style={{ backgroundColor: '#f0f0f0' }}>
-              <tr>
-                <th>User</th>
-                <th>Wallet</th>
-                <th>Action</th>
-                <th>Details</th>
-                <th>Time</th>
+        <div className="overflow-x-auto bg-white shadow rounded-lg">
+          <p className="mb-3 text-sm font-medium text-gray-700">Total Logs: {logs.length}</p>
+          <table className="w-full text-left table-auto border-collapse">
+            <thead className="bg-gray-100 sticky top-0">
+              <tr className="text-sm text-gray-600">
+                <th className="border px-4 py-3">User</th>
+                <th className="border px-4 py-3">Action</th>
+                <th className="border px-4 py-3">Details</th>
+                <th className="border px-4 py-3">Timestamp</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-sm text-gray-700">
               {logs.map(log => (
-                <tr key={log._id}>
-                  <td>{log.userId?.username || log.userId?.email || 'N/A'}</td>
-                  <td>{log.walletId?.name || 'N/A'}</td>
-                  <td>{log.action}</td>
-                  <td>
-                    <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                      {JSON.stringify(log.details, null, 2)}
-                    </pre>
-                  </td>
-                  <td>{new Date(log.timestamp || log.createdAt).toLocaleString()}</td>
+                <tr key={log._id} className="hover:bg-gray-50 transition">
+                  <td className="border px-4 py-2">{log.userId?.username || log.userId?.email}</td>
+                  <td className="border px-4 py-2 font-medium text-blue-700">{log.action}</td>
+                  <td className="border px-4 py-2 whitespace-pre-wrap text-sm">{getShortDetails(log.details, log.action)}</td>
+                  <td className="border px-4 py-2">{new Date(log.timestamp || log.createdAt).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </>
+        </div>
       )}
     </div>
   );
