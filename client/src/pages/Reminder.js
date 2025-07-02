@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   getReminders,
   createReminder,
   deleteReminder,
   updateReminder,
 } from "../api/reminderAPI";
+import { setDueCount } from "../redux/slices/reminderSlice";
 
 const Reminder = () => {
   const { walletId } = useParams();
+  const dispatch = useDispatch();
   const userRole = useSelector((state) => state.wallets.userRole || "viewer");
 
   const [reminders, setReminders] = useState([]);
@@ -22,10 +24,22 @@ const Reminder = () => {
   const [editDueDate, setEditDueDate] = useState("");
   const [editFrequency, setEditFrequency] = useState("");
 
+  const updateDueCount = (reminders) => {
+    const now = new Date();
+    const in7Days = new Date();
+    in7Days.setDate(now.getDate() + 7);
+    const count = reminders.filter((r) => {
+      const due = new Date(r.dueDate);
+      return due <= in7Days && r.status !== "done";
+    }).length;
+    dispatch(setDueCount(count));
+  };
+
   const fetchReminders = async () => {
     try {
       const res = await getReminders(walletId);
       setReminders(res.data);
+      updateDueCount(res.data);
     } catch (err) {
       alert("Failed to fetch reminders");
     }
@@ -49,15 +63,15 @@ const Reminder = () => {
   };
 
   const handleDelete = async (id) => {
-  if (window.confirm("Are you sure you want to delete this reminder?")) {
-    try {
-      await deleteReminder(id, walletId); // ✅ pass walletId
-      fetchReminders();
-    } catch (err) {
-      alert("Failed to delete reminder");
+    if (window.confirm("Are you sure you want to delete this reminder?")) {
+      try {
+        await deleteReminder(id, walletId);
+        fetchReminders();
+      } catch (err) {
+        alert("Failed to delete reminder");
+      }
     }
-  }
-};
+  };
 
   const handleEdit = (reminder) => {
     setEditId(reminder._id);
@@ -67,19 +81,19 @@ const Reminder = () => {
   };
 
   const handleUpdate = async (id) => {
-  try {
-    await updateReminder(id, {
-      description: editDescription,
-      dueDate: editDueDate,
-      frequency: editFrequency,
-      walletId, // ✅ pass walletId
-    });
-    setEditId(null);
-    fetchReminders();
-  } catch (err) {
-    alert("Failed to update reminder");
-  }
-};
+    try {
+      await updateReminder(id, {
+        description: editDescription,
+        dueDate: editDueDate,
+        frequency: editFrequency,
+        walletId,
+      });
+      setEditId(null);
+      fetchReminders();
+    } catch (err) {
+      alert("Failed to update reminder");
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -184,8 +198,7 @@ const Reminder = () => {
                       {reminder.description}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Due: {new Date(reminder.dueDate).toLocaleDateString()} |{" "}
-                      Frequency: {reminder.frequency}
+                      Due: {new Date(reminder.dueDate).toLocaleDateString()} | Frequency: {reminder.frequency}
                     </p>
                     {new Date(reminder.dueDate) < new Date() ? (
                       <p className="text-xs text-red-600 font-medium">
@@ -201,7 +214,7 @@ const Reminder = () => {
                         onClick={async () => {
                           await updateReminder(reminder._id, {
                             status: "done",
-                            walletId, 
+                            walletId,
                           });
                           fetchReminders();
                         }}
