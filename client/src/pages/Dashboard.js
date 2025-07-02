@@ -49,7 +49,9 @@ const DashboardLayout = () => {
     { label: 'Transactions', icon: <FaExchangeAlt />, path: `/wallets/${walletId}/transactions` },
     { label: 'Reminders', icon: <FaBell />, path: `/wallets/${walletId}/reminders`, badge: reminderCount },
     { label: 'Reports', icon: <FaFileAlt />, path: `/wallets/${walletId}/reports` },
-    { label: 'Audit Logs', icon: <FaScroll />, path: `/wallets/${walletId}/audit-logs` },
+    ...(userRole !== 'viewer' ? [
+    { label: 'Audit Logs', icon: <FaScroll />, path: `/wallets/${walletId}/audit-logs` }
+  ] : []),
     { label: 'Team', icon: <FaUsers />, path: `/wallets/${walletId}/team` }
   ] : [];
 
