@@ -4,6 +4,7 @@ const {
   getIncomeVsExpense,
   getExpenseByCategory,
   getWalletPerformance,
+  getDistinctCategories,
 } = require('../controllers/reportController');
 
 const authMiddleware = require('../middlewares/authMiddleware');
@@ -31,6 +32,14 @@ router.get(
   '/wallet-performance',
   authMiddleware,
   getWalletPerformance // Role check must be handled inside this controller
+);
+
+
+router.get(
+  '/distinct-categories',
+  authMiddleware,
+  checkWalletRole(['owner', 'accountant', 'viewer']),
+  getDistinctCategories
 );
 
 module.exports = router;
