@@ -27,7 +27,7 @@ exports.createWallet = async (req, res) => {
             const wallets = await Wallet.find({  $or: [
     { createdBy: userId },
     { members: { $elemMatch: { userId } } }
-  ] });
+  ] }).populate("createdBy", "username email");
             res.status(200).json(wallets);
         } catch (err) {
             res.status(500).json({ error: 'Error fetching wallets', details: err.message });
