@@ -38,6 +38,8 @@ app.use('/api/reminders', reminderRoutes);
 app.use('/api/audit-logs', require('./routes/auditLogRoutes'));
 
 
+const reportRoutes = require('./routes/reportRoutes');
+app.use('/api/reports', reportRoutes); // ✅ This is essential
 
 app.get('/', (req, res) => {
     res.send('VaultBooks Backend is running');
