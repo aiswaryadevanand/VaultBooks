@@ -11,6 +11,8 @@ import Login from "./pages/Login";
 import WalletListPage from "./pages/WalletListPage"; // First page after login
 import Wallets from "./pages/Wallets"; // Wallet Create/Edit page
 import Reminder from "./pages/Reminder";
+import Profile from "./pages/Profile";
+
 
 // Dashboard Layout and Inner Pages
 import DashboardLayout from "./pages/Dashboard";
@@ -59,6 +61,14 @@ return (
         </PrivateRoute>
       }
     />
+<Route
+  path="/profile"
+  element={
+    <PrivateRoute>
+      <Profile />
+    </PrivateRoute>
+  }
+/>
 
     {/* Wallet-Specific Dashboard */}
     <Route
