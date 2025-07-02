@@ -18,6 +18,7 @@ const{
 router.use(authMiddleware);
 
 router.post('/', createWallet);
+
 router.get('/', getWallets);
 router.put('/:id', updateWallet);
 router.delete('/:id', deleteWallet);

@@ -37,7 +37,7 @@ const Register = () => {
       dispatch(setCredentials({ token, user }));
 
       setMessage('Registration successful! Redirecting...');
-      setTimeout(() => navigate('/wallets-list'), 1500);
+      setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
       setMessage(err.response?.data?.message || 'Registration failed');
     }
