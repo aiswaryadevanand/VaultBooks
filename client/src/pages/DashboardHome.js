@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,Cell } from "recharts";
 import { CheckCircle, XCircle, AlertCircle, Clock } from "lucide-react";
 import { getDueReminders } from "../api/reminderAPI";
 
@@ -69,9 +69,11 @@ const DashboardHome = () => {
   ];
 
   const getBudgetStatus = (spent, limit) => {
-    if (spent > limit) return <XCircle className="text-red-500 w-5 h-5" />;
-    return <CheckCircle className="text-green-500 w-5 h-5" />;
-  };
+  const usage = spent / limit;
+  if (usage > 1) return <XCircle className="text-red-500 w-5 h-5" />;
+  if (usage > 0.75) return <AlertCircle className="text-yellow-500 w-5 h-5" />;
+  return <CheckCircle className="text-green-500 w-5 h-5" />;
+};
 
   const now = new Date();
   const in7Days = new Date();
@@ -100,13 +102,21 @@ const DashboardHome = () => {
         <div className="bg-white p-4 shadow rounded border col-span-1 md:col-span-2">
           <h3 className="text-lg font-semibold mb-3">Income vs Expense</h3>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={chartData}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="amount" fill="#6366F1" />
-            </BarChart>
-          </ResponsiveContainer>
+  <BarChart data={chartData}>
+    <XAxis dataKey="name" />
+    <YAxis />
+    <Tooltip />
+    <Bar dataKey="amount">
+      {chartData.map((entry, index) => (
+        <Cell
+          key={`cell-${index}`}
+          fill={entry.name === "Total Income" ? "#16a34a" : "#dc2626"}
+        />
+      ))}
+    </Bar>
+  </BarChart>
+</ResponsiveContainer>
+
         </div>
 
         {/* Budget Overview */}
@@ -117,7 +127,8 @@ const DashboardHome = () => {
           ) : (
             <ul className="space-y-3">
               {budgets.map((b) => {
-                const percent = Math.min((b.spent / b.limit) * 100, 100);
+                const usage = b.spent / b.limit;
+const percent = Math.min(usage * 100, 100);
                 return (
                   <li key={b._id}>
                     <div className="flex justify-between items-center text-sm font-medium">
@@ -127,9 +138,16 @@ const DashboardHome = () => {
                     <div className="flex items-center gap-2 mt-1">
                       <div className="w-full bg-gray-200 rounded h-2">
                         <div
-                          className={`h-2 rounded ${percent > 100 ? "bg-red-500" : "bg-blue-500"}`}
-                          style={{ width: `${percent}%` }}
-                        ></div>
+  className={`h-2 rounded ${
+    usage > 1
+      ? "bg-red-500"
+      : usage > 0.75
+      ? "bg-yellow-400"
+      : "bg-green-500"
+  }`}
+  style={{ width: `${percent}%` }}
+></div>
+
                       </div>
                       {getBudgetStatus(b.spent, b.limit)}
                     </div>
