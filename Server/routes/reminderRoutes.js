@@ -8,10 +8,11 @@ createReminder,
 getReminders,
 updateReminder,
 deleteReminder,
+getDueReminders
 } = require('../controllers/reminderController');
 
 router.use(auth); // Protect all routes
-
+router.get('/due', getDueReminders);
 // Anyone with access (including viewer) can read reminders
 router.get('/:walletId', getReminders);
 
@@ -19,5 +20,6 @@ router.get('/:walletId', getReminders);
 router.post('/', checkWalletRole(['owner', 'accountant']), createReminder);
 router.put('/:id', checkWalletRole(['owner', 'accountant']), updateReminder);
 router.delete('/:id', checkWalletRole(['owner']), deleteReminder); // Only owner can delete
+
 
 module.exports = router;
