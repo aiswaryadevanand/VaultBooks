@@ -1,6 +1,6 @@
-
 const AuditLog = require('../models/AuditLog');
 
+// ✅ GET /api/audit-logs
 exports.getAuditLogs = async (req, res) => {
   try {
     const { userId, walletId, action, date } = req.query;
@@ -25,33 +25,7 @@ exports.getAuditLogs = async (req, res) => {
 
     res.status(200).json(logs);
   } catch (err) {
-    console.error(err);
+    console.error('💥 Fetch Audit Logs Error:', err);
     res.status(500).json({ message: 'Failed to fetch audit logs', error: err.message });
-  }
-};
-
-// ✅ Log Export Actions Only (PDF / Excel)
-exports.logReportExport = async (req, res) => {
-  try {
-    const { action, walletId, details } = req.body;
-    const userId = req.user._id;
-
-    if (!action || !walletId) {
-      return res.status(400).json({ message: 'Action and Wallet ID are required' });
-    }
-
-    const log = new AuditLog({
-      userId,
-      walletId,
-      action, // should be "export-pdf" or "export-excel"
-      details,
-      timestamp: new Date()
-    });
-
-    await log.save();
-    res.status(201).json({ message: 'Export action logged successfully' });
-  } catch (err) {
-    console.error('💥 Export Log Error:', err);
-    res.status(500).json({ message: 'Failed to log export action', error: err.message });
   }
 };

@@ -146,7 +146,7 @@ const Reports = () => {
         )}
       </div>
 
-      {/* 📤 Export Buttons — Only for Owners */}
+      {/* 📄 Export Buttons — Only for Owners */}
       {userRole === 'owner' &&
         (chartData || pieData.labels.length > 0 || walletData.labels.length > 0) && (
           <div className="flex flex-col items-center mt-6">
