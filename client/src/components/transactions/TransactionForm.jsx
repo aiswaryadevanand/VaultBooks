@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   useAddTransactionMutation,
@@ -7,6 +8,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { clearSelectedTransaction } from '../../redux/slices/transactionSlice';
 import toast, { Toaster, useToasterStore } from 'react-hot-toast';
+import { CheckCircle } from 'lucide-react';
 
 const TransactionForm = ({ userRole, showDeleteSuccess }) => {
   const dispatch = useDispatch();
@@ -38,13 +40,15 @@ const TransactionForm = ({ userRole, showDeleteSuccess }) => {
 
   useEffect(() => {
     if (showDeleteSuccess) {
-      toast.success(' Transaction deleted successfully');
+      toast.success('Transaction deleted', { icon: <CheckCircle color="red" /> });
     }
   }, [showDeleteSuccess]);
 
   useEffect(() => {
     if (selected?.isMirror) {
-      toast.error(' This is a mirrored transfer transaction and cannot be edited.');
+      toast.error('This is a mirrored transfer transaction and cannot be edited.', {
+        icon: <CheckCircle color="red" />,
+      });
       dispatch(clearSelectedTransaction());
       return;
     }
@@ -87,15 +91,14 @@ const TransactionForm = ({ userRole, showDeleteSuccess }) => {
     e.preventDefault();
 
     if (!walletId) {
-      toast.error('⚠️ No wallet selected.');
+      toast.error('No wallet selected', { icon: <CheckCircle color="red" /> });
       return;
     }
 
-    // ✅ Preserve casing — do not convert to lowercase
     const preservedCategory = form.category.trim();
     const preservedTags = form.tags
       .split(',')
-      .map((tag) => tag.trim()) // preserve original case
+      .map((tag) => tag.trim())
       .filter(Boolean)
       .join(',');
 
@@ -121,10 +124,10 @@ const TransactionForm = ({ userRole, showDeleteSuccess }) => {
     try {
       if (selected) {
         await updateTransaction({ id: selected._id, formData }).unwrap();
-        toast.success(' Transaction updated');
+        toast.success('Transaction updated', { icon: <CheckCircle color="green" /> });
       } else {
         await addTransaction(formData).unwrap();
-        toast.success(' Transaction added');
+        toast.success('Transaction added', { icon: <CheckCircle color="green" /> });
       }
 
       dispatch(clearSelectedTransaction());
@@ -143,41 +146,38 @@ const TransactionForm = ({ userRole, showDeleteSuccess }) => {
       setFilePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
-      console.error('❌ Error submitting transaction:', err);
-      toast.error(err.data?.message || 'Failed to submit transaction.');
+      console.error('Error submitting transaction:', err);
+      toast.error(err.data?.message || 'Failed to submit transaction.', {
+        icon: <CheckCircle color="red" />,
+      });
     }
   };
 
   return (
     <>
-      {/* Toast background overlay */}
       {isToastVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity" />
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/20 z-40 transition duration-300" />
       )}
 
       <Toaster
-        position="top-center"
         toastOptions={{
-          duration: 3000,
+          duration: 2000,
           className:
-            'bg-white text-black px-6 py-4 rounded-xl shadow-lg border border-gray-200 text-center font-medium',
-          style: {
-            fontSize: '1rem',
-            maxWidth: '90vw',
-            zIndex: 50,
-          },
+            'bg-white text-black px-6 py-4 rounded-xl shadow-lg border border-gray-200 text-center font-medium animate-fade-slide',
         }}
         containerStyle={{
           position: 'fixed',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
+          zIndex: 9999,
         }}
       />
 
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded shadow bg-white relative z-10"
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 px-4 pb-4 border rounded shadow bg-white relative z-10"
+
       >
         <input
           name="category"

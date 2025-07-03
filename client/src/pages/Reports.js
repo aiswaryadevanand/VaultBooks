@@ -1,5 +1,4 @@
 
-
 // import React, { useEffect, useState, useRef } from 'react';
 // import { useSelector } from 'react-redux';
 // import {
@@ -11,6 +10,7 @@
 // import CategoryExpensePieChart from '../components/charts/CategoryExpensePieChart';
 // import WalletPerformanceChart from '../components/charts/WalletPerformanceChart';
 // import ExportButtons from '../components/reports/ExportButtons';
+// import MonthYearPicker from '../components/MonthYearPicker';
 
 // const Reports = () => {
 //   const selectedWallet = useSelector((state) => state.wallets.selectedWallet);
@@ -70,15 +70,10 @@
 
 //   return (
 //     <div className="p-6 space-y-6">
-//       {/* 🔍 Month Filter */}
+//       {/* 🔍 Custom Month Filter */}
 //       <div className="flex flex-wrap items-center gap-4">
 //         <label className="font-medium text-sm">Month:</label>
-//         <input
-//           type="month"
-//           value={filterMonth}
-//           onChange={(e) => setFilterMonth(e.target.value)}
-//           className="border px-2 py-1 rounded outline-none appearance-none focus:ring-2 focus:ring-blue-300"
-//         />
+//         <MonthYearPicker value={filterMonth} onChange={setFilterMonth} />
 //         <button
 //           onClick={handleApplyFilter}
 //           className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1 rounded"
@@ -128,8 +123,8 @@
 //         </div>
 
 //         {/* 🥧 Expense by Category */}
-//         <div className="bg-white p-4 rounded-xl shadow-sm h-[400px]">
-//           <h2 className="text-lg font-semibold mb-2">Expense Breakdown by Category</h2>
+//         <div className="bg-white p-4 rounded-xl shadow-sm h-[400px] flex flex-col justify-between">
+//           <h2 className="text-lg font-semibold mb-2 text-center">Expense Breakdown by Category</h2>
 //           {pieData.labels.length > 0 && (
 //             <div className="h-[300px] flex justify-center items-center">
 //               <CategoryExpensePieChart labels={pieData.labels} data={pieData.data} />
@@ -173,6 +168,8 @@
 // };
 
 // export default Reports;
+
+
 
 
 
@@ -247,6 +244,11 @@ const Reports = () => {
 
   return (
     <div className="p-6 space-y-6">
+      {/* 📊 Page Title */}
+      <h1 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+         Reports Dashboard
+      </h1>
+
       {/* 🔍 Custom Month Filter */}
       <div className="flex flex-wrap items-center gap-4">
         <label className="font-medium text-sm">Month:</label>
@@ -310,7 +312,7 @@ const Reports = () => {
         </div>
       </div>
 
-      {/* 📊 Wallet Performance (Full width) */}
+      {/* 📊 Wallet Performance */}
       <div className="bg-white p-4 rounded-xl shadow-sm">
         <h2 className="text-lg font-semibold mb-2">Wallet Performance</h2>
         {walletData.labels.length > 0 && (
@@ -322,7 +324,7 @@ const Reports = () => {
         )}
       </div>
 
-      {/* 📤 Export Buttons — Only for Owners */}
+      {/* 📤 Export Buttons */}
       {userRole === 'owner' &&
         (chartData || pieData.labels.length > 0 || walletData.labels.length > 0) && (
           <div className="flex flex-col items-center mt-6">
