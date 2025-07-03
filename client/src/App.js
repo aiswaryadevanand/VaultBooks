@@ -6,6 +6,8 @@ import { loadStoredCredentials } from "./redux/slices/authSlice";
 // Public Pages
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPasswordToken from "./pages/ResetPasswordToken";
 
 // Protected Pages
 import WalletListPage from "./pages/WalletListPage"; // First page after login
@@ -41,7 +43,8 @@ return (
 <Route path="/" element={<Navigate to="/login" />} />
 <Route path="/register" element={<Register />} />
 <Route path="/login" element={<Login />} />
-
+<Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password/:token" element={<ResetPasswordToken />} />
 
     {/* Default Authenticated Landing: Wallet List Page */}
     <Route
