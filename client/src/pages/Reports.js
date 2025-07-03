@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
@@ -10,15 +9,18 @@ import IncomeExpenseLineChart from '../components/charts/IncomeExpenseLineChart'
 import CategoryExpensePieChart from '../components/charts/CategoryExpensePieChart';
 import WalletPerformanceChart from '../components/charts/WalletPerformanceChart';
 import ExportButtons from '../components/reports/ExportButtons';
+import MonthYearPicker from '../components/MonthYearPicker';
 
 const Reports = () => {
   const selectedWallet = useSelector((state) => state.wallets.selectedWallet);
   const walletId = selectedWallet?._id;
+  const userRole = useSelector((state) => state.wallets.userRole || 'viewer');
 
   const [view, setView] = useState('monthly');
   const [selectedMonth, setSelectedMonth] = useState(
-    new Date().toISOString().slice(0, 7) // Default to current month (YYYY-MM)
+    new Date().toISOString().slice(0, 7)
   );
+  const [filterMonth, setFilterMonth] = useState('');
 
   const [chartData, setChartData] = useState(null);
   const [summary, setSummary] = useState(null);
@@ -27,6 +29,15 @@ const Reports = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const chartRef = useRef();
+
+  const handleApplyFilter = () => {
+    setSelectedMonth(filterMonth);
+  };
+
+  const handleResetFilter = () => {
+    setFilterMonth('');
+    setSelectedMonth('');
+  };
 
   useEffect(() => {
     if (!walletId || !selectedMonth) return;
@@ -61,20 +72,27 @@ const Reports = () => {
   return (
     <div className="p-6 space-y-6">
       {/* 🔍 Month Filter */}
-      <div className="flex justify-start items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <label className="font-medium text-sm">Month:</label>
-        <input
-          type="month"
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-          className="border px-2 py-1 rounded"
-        />
+        <MonthYearPicker value={filterMonth} onChange={setFilterMonth} />
+        <button
+          onClick={handleApplyFilter}
+          className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1 rounded"
+        >
+          Filter
+        </button>
+        <button
+          onClick={handleResetFilter}
+          className="bg-gray-500 hover:bg-gray-600 text-white text-sm px-3 py-1 rounded"
+        >
+          Reset
+        </button>
       </div>
 
       {/* 📊 Chart Grid */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* 📈 Income vs Expense */}
-        <div className="bg-white p-4 rounded-xl shadow-sm">
+        <div className="bg-white p-4 rounded-xl shadow-sm h-[400px]">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-semibold">Income vs Expense</h2>
             <select
@@ -95,7 +113,7 @@ const Reports = () => {
           )}
 
           {chartData?.labels?.length > 0 && (
-            <div ref={chartRef}>
+            <div ref={chartRef} className="h-[300px]">
               <IncomeExpenseLineChart
                 labels={chartData.labels}
                 incomeData={chartData.incomeData}
@@ -106,15 +124,17 @@ const Reports = () => {
         </div>
 
         {/* 🥧 Expense by Category */}
-        <div className="bg-white p-4 rounded-xl shadow-sm">
-          <h2 className="text-lg font-semibold mb-2">Expense Breakdown by Category</h2>
+        <div className="bg-white p-4 rounded-xl shadow-sm h-[400px] flex flex-col justify-between">
+          <h2 className="text-lg font-semibold mb-2 text-center">Expense Breakdown by Category</h2>
           {pieData.labels.length > 0 && (
-            <CategoryExpensePieChart labels={pieData.labels} data={pieData.data} />
+            <div className="h-[300px] flex justify-center items-center">
+              <CategoryExpensePieChart labels={pieData.labels} data={pieData.data} />
+            </div>
           )}
         </div>
       </div>
 
-      {/* 📊 Wallet Performance (Full width) */}
+      {/* 📊 Wallet Performance */}
       <div className="bg-white p-4 rounded-xl shadow-sm">
         <h2 className="text-lg font-semibold mb-2">Wallet Performance</h2>
         {walletData.labels.length > 0 && (
@@ -126,22 +146,22 @@ const Reports = () => {
         )}
       </div>
 
-      {/* 📤 Export Buttons */}
-      {(chartData || pieData.labels.length > 0 || walletData.labels.length > 0) && (
-        <div className="flex flex-col items-center mt-6">
-          <p className="font-medium mb-2">Export Reports</p>
-          <ExportButtons
-            lineChart={chartData}
-            pieChart={pieData}
-            walletChart={walletData}
-            summary={summary}
-            selectedMonth={selectedMonth}
-            view={view}
-            walletId={walletId} // ✅ Important for logging
-          />
-
-        </div>
-      )}
+      {/* 📤 Export Buttons — Only for Owners */}
+      {userRole === 'owner' &&
+        (chartData || pieData.labels.length > 0 || walletData.labels.length > 0) && (
+          <div className="flex flex-col items-center mt-6">
+            <p className="font-medium mb-2">Export Reports</p>
+            <ExportButtons
+              lineChart={chartData}
+              pieChart={pieData}
+              walletChart={walletData}
+              summary={summary}
+              selectedMonth={selectedMonth}
+              view={view}
+              walletId={walletId}
+            />
+          </div>
+        )}
 
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}

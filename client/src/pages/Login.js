@@ -92,7 +92,12 @@ function Login() {
             Sign Up
           </span>
         </p>
+        <p className="mt-4 text-sm text-blue-600 cursor-pointer hover:underline" onClick={() => navigate("/forgot-password")}>
+  Forgot Password?
+</p>
+
       </div>
+      
 
       {/* Right Side (Animation + Image) */}
       <div className="w-1/2 flex flex-col items-center justify-start bg-gray-200 p-10">
