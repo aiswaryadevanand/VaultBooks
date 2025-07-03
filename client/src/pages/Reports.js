@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
@@ -28,6 +29,7 @@ const Reports = () => {
   const [walletData, setWalletData] = useState({ labels: [], income: [], expense: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [reloadLogs, setReloadLogs] = useState(false);
   const chartRef = useRef();
 
   const handleApplyFilter = () => {
@@ -37,6 +39,10 @@ const Reports = () => {
   const handleResetFilter = () => {
     setFilterMonth('');
     setSelectedMonth('');
+  };
+
+  const handleExport = () => {
+    setReloadLogs((prev) => !prev);
   };
 
   useEffect(() => {
@@ -159,6 +165,7 @@ const Reports = () => {
               selectedMonth={selectedMonth}
               view={view}
               walletId={walletId}
+              onExport={handleExport} // ✅ Added for audit logging refresh
             />
           </div>
         )}

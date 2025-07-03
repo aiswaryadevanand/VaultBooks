@@ -56,40 +56,45 @@ const createTransaction = async (req, res) => {
     const numericAmount = parseFloat(amount);
 
     if (type === 'transfer') {
-      if (!walletId || !toWalletId || walletId === toWalletId) {
-        return res.status(400).json({ error: 'Invalid transfer wallets' });
-      }
+  if (!walletId || !toWalletId || walletId === toWalletId) {
+    return res.status(400).json({ error: 'Invalid transfer wallets' });
+  }
 
-      const fromTx = new Transaction({
-        userId, type, category, amount: numericAmount, note, date, tags,
-        walletId, toWalletId, fileUrl, recurring, frequency,
-        nextDate, isMirror: false,
-      });
+  const fromTx = new Transaction({
+    userId, type, category, amount: numericAmount, note, date, tags,
+    walletId, toWalletId, fileUrl, recurring, frequency,
+    nextDate, isMirror: false,
+  });
 
-      const toTx = new Transaction({
-        userId, type, category, amount: numericAmount, note, date, tags,
-        walletId: toWalletId, toWalletId: walletId, fileUrl,
-        recurring, frequency, nextDate, isMirror: true,
-      });
+  const toTx = new Transaction({
+    userId, type, category, amount: numericAmount, note, date, tags,
+    walletId: toWalletId, toWalletId: walletId, fileUrl,
+    recurring, frequency, nextDate, isMirror: true,
+  });
 
-      await fromTx.save();
-      await toTx.save();
+  await fromTx.save();
+  await toTx.save();
 
-      await logAudit({
-        userId,
-        walletId,
-        action: 'create-transaction-transfer',
-        details: {
-          fromWallet: walletId,
-          toWallet: toWalletId,
-          amount,
-          category,
-          note
-        }
-      });
+  // ✅ Fetch wallet names for logging
+  const fromWallet = await Wallet.findById(walletId).select('name');
+  const toWallet = await Wallet.findById(toWalletId).select('name');
 
-      return res.status(201).json({ from: fromTx, to: toTx });
+  await logAudit({
+    userId,
+    walletId,
+    action: 'create-transaction-transfer',
+    details: {
+      fromWallet: fromWallet?.name || walletId,
+      toWallet: toWallet?.name || toWalletId,
+      amount,
+      category,
+      note
     }
+  });
+
+  return res.status(201).json({ from: fromTx, to: toTx });
+}
+
 
     const transaction = new Transaction({
       userId, type, category, amount: numericAmount, note, date, tags,

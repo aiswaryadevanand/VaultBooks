@@ -179,7 +179,6 @@ exports.getDistinctCategories = async (req, res) => {
   }
 };
 
-// 📝 5. Log Export Action
 
 // 📝 5. Log Export Action
 exports.logExportAction = async (req, res) => {
@@ -204,15 +203,16 @@ exports.logExportAction = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to export this wallet\'s reports' });
     }
 
-    await logAudit({
-      userId,
-      walletId,
-      action,
-      details: {
-        ...details,
-        exportedAt: new Date()
-      }
-    });
+    
+   await logAudit({
+  userId: req.user.userId,
+  walletId: req.body.walletId || null,
+  action: 'export-pdf', // or 'export-excel'
+  details: {
+    reportName: 'Income vs Expense Report', // or any other dynamic name
+    exportedAt: new Date().toISOString()
+  }
+});
 
     res.status(200).json({ message: 'Export action logged successfully' });
   } catch (error) {
