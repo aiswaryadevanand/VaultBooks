@@ -16,7 +16,14 @@ const Wallets = () => {
   const { wallets } = useSelector((state) => state.wallets);
   const { token, user } = useSelector((state) => state.auth);
 
-  const userWallets = wallets.filter(wallet => wallet.createdBy === user?._id);
+  const userWallets = wallets.filter(wallet => {
+  const creatorId = typeof wallet.createdBy === "string"
+    ? wallet.createdBy
+    : wallet.createdBy?._id;
+  return creatorId === user?._id;
+});
+
+
 
   const [formData, setFormData] = useState({ name: "", type: "personal" });
   const [editMode, setEditMode] = useState(false);
@@ -28,6 +35,11 @@ const Wallets = () => {
       dispatch(fetchWallets());
     }
   }, [dispatch, token]);
+
+  useEffect(() => {
+  console.log("Wallets from Redux:", wallets);
+  console.log("User ID:", user?._id);
+}, [wallets, user]);
 
   useEffect(() => {
     if (message) {
