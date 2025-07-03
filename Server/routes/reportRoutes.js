@@ -5,6 +5,7 @@ const {
   getExpenseByCategory,
   getWalletPerformance,
   getDistinctCategories,
+  logExportAction, 
 } = require('../controllers/reportController');
 
 const authMiddleware = require('../middlewares/authMiddleware');
@@ -41,5 +42,12 @@ router.get(
   checkWalletRole(['owner', 'accountant', 'viewer']),
   getDistinctCategories
 );
+// Add this route to log export actions
+router.post(
+  '/export',
+  authMiddleware,
+  logExportAction
+);
+
 
 module.exports = router;
