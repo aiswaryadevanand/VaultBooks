@@ -14,9 +14,13 @@ import ExportButtons from '../components/reports/ExportButtons';
 const Reports = () => {
   const selectedWallet = useSelector((state) => state.wallets.selectedWallet);
   const walletId = selectedWallet?._id;
+  const userRole = useSelector((state) => state.wallets.userRole || 'viewer');
 
   const [view, setView] = useState('monthly');
-  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
 
   const [chartData, setChartData] = useState(null);
   const [summary, setSummary] = useState(null);
@@ -124,20 +128,21 @@ const Reports = () => {
         )}
       </div>
 
-      {/* 📤 Export Buttons */}
-      {(chartData || pieData.labels.length > 0 || walletData.labels.length > 0) && (
-        <div className="flex flex-col items-center mt-6">
-          <p className="font-medium mb-2">Export Reports</p>
-          <ExportButtons
-            lineChart={chartData}
-            pieChart={pieData}
-            walletChart={walletData}
-            summary={summary}
-            selectedMonth={selectedMonth}
-            view={view}
-          />
-        </div>
-      )}
+      {/* 📤 Export Buttons — Only for Owners */}
+      {userRole === 'owner' &&
+        (chartData || pieData.labels.length > 0 || walletData.labels.length > 0) && (
+          <div className="flex flex-col items-center mt-6">
+            <p className="font-medium mb-2">Export Reports</p>
+            <ExportButtons
+              lineChart={chartData}
+              pieChart={pieData}
+              walletChart={walletData}
+              summary={summary}
+              selectedMonth={selectedMonth}
+              view={view}
+            />
+          </div>
+        )}
 
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
