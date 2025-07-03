@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
@@ -78,6 +79,12 @@ const Reports = () => {
   return (
     <div className="p-6 space-y-6">
       {/* 🔍 Month Filter */}
+      {/* 📊 Page Title */}
+      <h1 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+         Reports Dashboard
+      </h1>
+
+      {/* 🔍 Custom Month Filter */}
       <div className="flex flex-wrap items-center gap-4">
         <label className="font-medium text-sm">Month:</label>
         <MonthYearPicker value={filterMonth} onChange={setFilterMonth} />
@@ -153,6 +160,7 @@ const Reports = () => {
       </div>
 
       {/* 📄 Export Buttons — Only for Owners */}
+      {/* 📤 Export Buttons */}
       {userRole === 'owner' &&
         (chartData || pieData.labels.length > 0 || walletData.labels.length > 0) && (
           <div className="flex flex-col items-center mt-6">

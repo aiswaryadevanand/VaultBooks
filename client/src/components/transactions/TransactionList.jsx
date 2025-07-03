@@ -6,8 +6,10 @@ import {
 } from '../../api/transactionApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedTransaction } from '../../redux/slices/transactionSlice';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import toast, { Toaster, useToasterStore } from 'react-hot-toast';
+import { Pencil, Trash2, CheckCircle } from 'lucide-react';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 const TransactionList = ({ userRole }) => {
   const dispatch = useDispatch();
@@ -25,15 +27,14 @@ const TransactionList = ({ userRole }) => {
 
   const [filterInputs, setFilterInputs] = useState({ category: '', date: '', tags: '' });
   const [filters, setFilters] = useState({ category: '', date: '', tags: '' });
+  const [confirmId, setConfirmId] = useState(null);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilterInputs((prev) => ({ ...prev, [name]: value }));
   };
 
-  const applyFilters = () => {
-    setFilters({ ...filterInputs });
-  };
+  const applyFilters = () => setFilters({ ...filterInputs });
 
   const resetFilters = () => {
     setFilterInputs({ category: '', date: '', tags: '' });
@@ -43,13 +44,14 @@ const TransactionList = ({ userRole }) => {
   const canEdit = userRole === 'owner' || userRole === 'accountant';
   const canDelete = userRole === 'owner';
 
-  const handleDelete = async (id, walletId) => {
+  const handleDelete = async () => {
     try {
-      await deleteTransaction({ id, walletId }).unwrap();
-      toast.success('Transaction deleted successfully');
+      await deleteTransaction({ id: confirmId, walletId }).unwrap();
+      toast.success('Transaction deleted', { icon: <CheckCircle color="green" /> });
+      setConfirmId(null);
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.error('❌ Failed to delete transaction');
+      toast.error('Failed to delete transaction', { icon: <CheckCircle color="red" /> });
     }
   };
 
@@ -73,20 +75,22 @@ const TransactionList = ({ userRole }) => {
 
   return (
     <div className="mt-6 relative z-10">
-      {isToastVisible && <div className="fixed inset-0 bg-black bg-opacity-40 z-40 transition-opacity" />}
+      {isToastVisible && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/20 z-40 transition duration-300" />
+      )}
 
       <Toaster
-        position="top-center"
         toastOptions={{
-          className: 'bg-white text-black px-6 py-4 shadow-lg rounded-lg border border-gray-300',
-          duration: 3000,
-          style: { fontSize: '1rem', maxWidth: '90vw', zIndex: 50 },
+          duration: 2000,
+          className:
+            'bg-white text-black px-6 py-4 rounded-xl shadow-lg border border-gray-200 text-center font-medium animate-fade-slide',
         }}
         containerStyle={{
           position: 'fixed',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
+          zIndex: 9999,
         }}
       />
 
@@ -138,59 +142,58 @@ const TransactionList = ({ userRole }) => {
       </div>
 
       {/* Table */}
-      {transactions.length === 0 ? (
-        <p className="text-gray-500">You have no transactions.</p>
-      ) : filteredData.length === 0 ? (
-        <p className="text-gray-500">No transactions match the filters.</p>
-      ) : (
-        <table className="min-w-full bg-white border border-gray-300 rounded shadow text-sm">
+      <div className="w-full overflow-x-auto max-w-full">
+        <table className="table-fixed w-full border border-gray-300 rounded shadow text-sm">
           <thead>
             <tr className="bg-gray-100 text-left">
-              <th className="py-2 px-3">Type</th>
-              <th className="py-2 px-3">Category</th>
-              <th className="py-2 px-3">Amount</th>
-              {hasTransfer && <th className="py-2 px-3">Direction</th>}
-              <th className="py-2 px-3">Date</th>
-              <th className="py-2 px-3">Tags</th>
-              <th className="py-2 px-3">Recurring</th>
-              <th className="py-2 px-3">Frequency</th>
-              <th className="py-2 px-3">File</th>
-              <th className="py-2 px-3">Actions</th>
+              <th className="py-2 px-3 w-24">Type</th>
+              <th className="py-2 px-3 w-32">Category</th>
+              <th className="py-2 px-3 w-24">Amount</th>
+              {hasTransfer && <th className="py-2 px-3 w-40">Direction</th>}
+              <th className="py-2 px-3 w-28">Date</th>
+              <th className="py-2 px-3 w-40">Tags</th>
+              <th className="py-2 px-3 w-20">Recurring</th>
+              <th className="py-2 px-3 w-24">Frequency</th>
+              <th className="py-2 px-3 w-20">File</th>
+              <th className="py-2 px-3 w-20">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((tx) => (
-              <tr key={tx._id} className="border-t hover:bg-gray-50">
-                <td className="py-2 px-3 capitalize">{tx.type}</td>
-                <td className="py-2 px-3">{tx.category}</td>
-                <td className="py-2 px-3">₹{tx.amount}</td>
+              <tr key={tx._id} className="border-t hover:bg-gray-50 h-14 align-middle">
+                <td className="px-3 py-2 truncate">{tx.type}</td>
+                <td className="px-3 py-2 truncate">{tx.category}</td>
+                <td className="px-3 py-2 truncate">₹{tx.amount}</td>
                 {hasTransfer && (
-                  <td className="py-2 px-3 text-sm text-gray-700">
+                  <td className="px-3 py-2 text-sm text-gray-700 whitespace-normal break-words">
+
                     {tx.type === 'transfer'
                       ? `${tx.isMirror ? (tx.toWalletId?.name || 'Unknown') : (tx.walletId?.name || 'Unknown')} → ${tx.isMirror ? (tx.walletId?.name || 'Unknown') : (tx.toWalletId?.name || 'Unknown')}`
                       : '—'}
                   </td>
                 )}
-                <td className="py-2 px-3">{new Date(tx.date).toLocaleDateString()}</td>
-                <td className="py-2 px-3 space-x-1">
-                  {tx.tags?.map((tag, i) => (
-                    <span
-                      key={i}
-                      className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold mr-1 px-2.5 py-0.5 rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                <td className="px-3 py-2 truncate">{new Date(tx.date).toLocaleDateString()}</td>
+                <td className="px-3 py-2">
+                  <div className="flex gap-1 overflow-x-auto max-w-full">
+                    {tx.tags?.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded whitespace-nowrap"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </td>
-                <td className="py-2 px-3 text-lg">
+                <td className="px-3 py-2 text-center">
                   {tx.recurring ? (
-                    <FaCheckCircle className="text-green-600" />
+                    <FaCheckCircle className="text-green-600 inline w-4 h-4" />
                   ) : (
-                    <FaTimesCircle className="text-red-600" />
+                    <FaTimesCircle className="text-red-600 inline w-4 h-4" />
                   )}
                 </td>
-                <td className="py-2 px-3">{tx.recurring ? tx.frequency || '—' : '—'}</td>
-                <td className="py-2 px-3">
+                <td className="px-3 py-2 truncate">{tx.recurring ? tx.frequency || '—' : '—'}</td>
+                <td className="px-3 py-2 truncate">
                   {tx.fileUrl ? (
                     <a
                       href={`http://localhost:5000/${tx.fileUrl}`}
@@ -202,24 +205,22 @@ const TransactionList = ({ userRole }) => {
                     </a>
                   ) : '—'}
                 </td>
-                <td className="py-2 px-3">
-                  <div className="flex items-center space-x-2">
+                <td className="px-3 py-2">
+                  <div className="flex items-center gap-2">
                     {canEdit && (
                       <button
                         onClick={() => dispatch(setSelectedTransaction(tx))}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                        className="text-blue-600 hover:text-blue-800"
                       >
-                        Edit
+                        <Pencil className="w-5 h-5" />
                       </button>
                     )}
                     {canDelete && (
                       <button
-                        onClick={() =>
-                          handleDelete(tx._id, tx.walletId?._id || tx.walletId)
-                        }
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                        onClick={() => setConfirmId(tx._id)}
+                        className="text-red-600 hover:text-red-800"
                       >
-                        Delete
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     )}
                   </div>
@@ -228,6 +229,15 @@ const TransactionList = ({ userRole }) => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Confirm Dialog */}
+      {confirmId && (
+        <ConfirmDialog
+          message="Are you sure you want to delete this transaction?"
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmId(null)}
+        />
       )}
     </div>
   );
