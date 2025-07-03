@@ -2,7 +2,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+const {sendResetEmail} = require('../utils/mailer')
 // ✅ Register
 exports.register = async (req, res) => {
   try {
@@ -94,5 +94,39 @@ exports.resetPassword = async (req, res) => {
   } catch (err) {
      console.error("❌ Password reset error:", err.message);
     res.status(500).json({ error: "Password reset failed", details: err.message });
+  }
+};
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  console.log("📧 Forgot password request for:", email); // ✅ Add this
+  const user = await User.findOne({ email });
+  if (!user) 
+    {
+      console.log("❌ User not found for:", email); // ✅ Add this
+      return res.status(400).json({ error: "User not found" });
+    }
+
+  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+
+  await sendResetEmail(user.email, token);
+
+  res.json({ message: "Password reset link sent to your email" });
+};
+
+exports.resetPasswordViaToken = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: "Password has been reset" });
+  } catch (err) {
+    return res.status(400).json({ error: "Invalid or expired token" });
   }
 };
