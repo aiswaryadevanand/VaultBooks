@@ -86,13 +86,13 @@ function Login() {
         <p className="mt-6">
           Don't have an account?{' '}
           <span
-            className="text-blue-600 cursor-pointer hover:underline"
+            className="text-blue-600 cursor-pointer "
             onClick={() => navigate('/register')}
           >
             Sign Up
           </span>
         </p>
-        <p className="mt-4 text-sm text-blue-600 cursor-pointer hover:underline" onClick={() => navigate("/forgot-password")}>
+        <p className="mt-4 text-sm text-blue-600 cursor-pointer " onClick={() => navigate("/forgot-password")}>
   Forgot Password?
 </p>
 
