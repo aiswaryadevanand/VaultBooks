@@ -84,9 +84,9 @@ const DashboardLayout = () => {
           {walletId && (
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-4">
-                <button onClick={() => navigate("/wallets-list")} className="text-blue-600 hover:underline text-sm">
+                {/* <button onClick={() => navigate("/wallets-list")} className="text-blue-600 hover:underline text-sm">
                   ← Back to Wallets
-                </button>
+                </button> */}
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
                     💼 {selectedWallet.name}
