@@ -30,7 +30,10 @@ const getTransactions = async (req, res) => {
       return res.status(404).json({ message: 'Wallet not found' });
     }
 
-    const transactions = await Transaction.find({ walletId });
+    const transactions = await Transaction.find({ walletId })
+  .populate('walletId', 'name')
+  .populate('toWalletId', 'name');
+
     res.status(200).json(transactions);
   } catch (err) {
     console.error('Error in getTransactions:', err);

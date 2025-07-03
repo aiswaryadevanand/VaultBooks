@@ -1,6 +1,4 @@
 
-
-
 import React, { useEffect, useState } from 'react';
 import {
   useGetTransactionsQuery,
@@ -25,19 +23,30 @@ const TransactionList = ({ userRole }) => {
     if (walletId) refetch();
   }, [walletId, refetch]);
 
+  const [filterInputs, setFilterInputs] = useState({ category: '', date: '', tags: '' });
   const [filters, setFilters] = useState({ category: '', date: '', tags: '' });
-  const canEdit = userRole === 'owner' || userRole === 'accountant';
-  const canDelete = userRole === 'owner';
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    setFilterInputs((prev) => ({ ...prev, [name]: value }));
   };
+
+  const applyFilters = () => {
+    setFilters({ ...filterInputs });
+  };
+
+  const resetFilters = () => {
+    setFilterInputs({ category: '', date: '', tags: '' });
+    setFilters({ category: '', date: '', tags: '' });
+  };
+
+  const canEdit = userRole === 'owner' || userRole === 'accountant';
+  const canDelete = userRole === 'owner';
 
   const handleDelete = async (id, walletId) => {
     try {
       await deleteTransaction({ id, walletId }).unwrap();
-      toast.success(' Transaction deleted successfully');
+      toast.success('Transaction deleted successfully');
     } catch (err) {
       console.error('Delete failed:', err);
       toast.error('❌ Failed to delete transaction');
@@ -84,28 +93,48 @@ const TransactionList = ({ userRole }) => {
       <h2 className="text-lg font-semibold mb-4">All Transactions</h2>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-6">
-        <select name="category" value={filters.category} onChange={handleFilterChange} className="border p-2 rounded w-40 text-left">
+      <div className="flex gap-2 items-center flex-wrap mb-6">
+        <select
+          name="category"
+          value={filterInputs.category}
+          onChange={handleFilterChange}
+          className="border p-2 rounded w-40"
+        >
           <option value="">All Categories</option>
           {categoryOptions.map((cat, i) => (
             <option key={i} value={cat}>{cat}</option>
           ))}
         </select>
+
         <input
           type="date"
           name="date"
-          value={filters.date}
+          value={filterInputs.date}
           onChange={handleFilterChange}
           className="border p-2 rounded w-40"
           max={new Date().toISOString().split("T")[0]}
         />
+
         <input
           name="tags"
           placeholder="Tag"
-          value={filters.tags}
+          value={filterInputs.tags}
           onChange={handleFilterChange}
           className="border p-2 rounded w-40"
         />
+
+        <button
+          onClick={applyFilters}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+        >
+          Filter
+        </button>
+        <button
+          onClick={resetFilters}
+          className="bg-gray-400 hover:bg-gray-500 text-white px-3 py-1 rounded"
+        >
+          Reset
+        </button>
       </div>
 
       {/* Table */}
