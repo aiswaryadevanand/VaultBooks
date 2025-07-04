@@ -208,51 +208,76 @@ exports.getWalletDetailsWithRoleCheck = async (req, res) => {
   }
 };
 
+
 // Update Member Role
 exports.updateMemberRole = async (req, res) => {
   const { walletId, memberId } = req.params;
   const { role } = req.body;
 
   try {
-    const wallet = await Wallet.findById(walletId);
+    const wallet = await Wallet.findById(walletId).populate('members.userId', 'email');
     if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
 
     if (wallet.createdBy.toString() !== req.user.userId) {
       return res.status(403).json({ error: 'Only owner can update roles' });
     }
 
-    const member = wallet.members.find(m => m.userId.toString() === memberId);
+    const member = wallet.members.find(m => m.userId._id.toString() === memberId);
     if (!member) return res.status(404).json({ error: 'Member not found' });
 
     member.role = role;
     await wallet.save();
+
+    await logAudit({
+      userId: req.user.userId,
+      walletId: wallet._id,
+      action: 'update-role',
+      details: {
+        targetUser: member.userId.email,
+        newRole: role,
+        changedBy: req.user.email,
+      },
+    });
 
     res.json({ message: 'Role updated successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update role', details: err.message });
   }
 };
-
-// Remove Member from Wallet
+//remove member
 exports.removeMember = async (req, res) => {
   const { walletId, memberId } = req.params;
 
   try {
-    const wallet = await Wallet.findById(walletId);
+    const wallet = await Wallet.findById(walletId).populate('members.userId', 'email');
     if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
 
     if (wallet.createdBy.toString() !== req.user.userId) {
       return res.status(403).json({ error: 'Only owner can remove members' });
     }
 
-    const initialCount = wallet.members.length;
-    wallet.members = wallet.members.filter(m => m.userId.toString() !== memberId);
-
-    if (wallet.members.length === initialCount) {
+    const member = wallet.members.find(m => m.userId._id.toString() === memberId);
+    if (!member) {
       return res.status(404).json({ error: 'Member not found or already removed' });
     }
 
+    const removedEmail = member.userId.email;
+
+    // Remove the member
+    wallet.members = wallet.members.filter(m => m.userId._id.toString() !== memberId);
     await wallet.save();
+
+    // Log the removal in audit logs
+    await logAudit({
+      userId: req.user.userId,
+      walletId: wallet._id,
+      action: 'remove-member',
+      details: {
+        removedEmail,
+        removedBy: req.user.email,
+      },
+    });
+
     res.json({ message: 'Member removed successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to remove member', details: err.message });
