@@ -55,6 +55,7 @@ exports.updateReminder = async (req, res) => {
   }
 };
 
+
 exports.deleteReminder = async (req, res) => {
   try {
     const userId = req.user.userId;
