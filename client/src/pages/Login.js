@@ -8,6 +8,7 @@ import { Player } from '@lottiefiles/react-lottie-player';
 import moneyAnim from '../assets/money.json';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import logo from "../assets/logo192.png";
 
 function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -50,7 +51,13 @@ function Login() {
     <div className="flex h-screen">
       {/* Left Side */}
       <div className="w-1/2 flex flex-col justify-center bg-gray-100 px-10">
-        <h1 className="text-3xl font-bold mb-6">VaultBooks</h1>
+        <div className="flex items-center gap-3 mb-6">
+  <img src={logo} alt="VaultBooks Logo" className="w-10 h-10" />
+  <h1 className="text-3xl font-extrabold tracking-wide text-blue-400">
+    Vault<span className="text-gray-800">Books</span>
+  </h1>
+</div>
+
         <h2 className="text-xl font-semibold mb-2">Welcome Back</h2>
         <p className="mb-6 text-gray-700">Please enter your details to log in.</p>
 
