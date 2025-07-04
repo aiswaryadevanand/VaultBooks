@@ -2,10 +2,10 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api', // ✅ Update this if deploying
+  baseURL: 'http://localhost:5000/api', 
 });
 
-// 🔐 Attach token to every request
+//  Attach token to every request
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -28,7 +28,7 @@ export const fetchAuditLogs = async (filters = {}, page = 1, limit = 10) => {
     const res = await API.get('/audit-logs', { params });
     return res.data; // Expected to return { logs, totalPages, currentPage }
   } catch (err) {
-    console.error('❌ Error fetching audit logs:', err.response?.data || err.message);
+    console.error(' Error fetching audit logs:', err.response?.data || err.message);
     throw err;
   }
 };

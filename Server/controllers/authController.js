@@ -3,17 +3,17 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const {sendResetEmail} = require('../utils/mailer')
-// ✅ Register
+//  Register
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // 🔎 Check if user already exists
+    //  Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ message: 'User already exists' });
 
-    // 🔐 Don't hash the password manually — pre-save hook will handle it
+    //  Don't hash the password manually — pre-save hook will handle it
     const newUser = new User({
       username,
       email,
@@ -28,22 +28,22 @@ exports.register = async (req, res) => {
   }
 };
 
-// ✅ Login
+//  Login
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 🔎 Find user by email
+    //  Find user by email
     const user = await User.findOne({ email });
     if (!user)
       return res.status(400).json({ message: 'Invalid email or password' });
 
-    // 🔐 Compare input password with stored hash
+    //  Compare input password with stored hash
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
       return res.status(400).json({ message: 'Invalid email or password' });
 
-    // 🪪 Generate token with role info
+    //  Generate token with role info
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -74,9 +74,9 @@ exports.getLatestUser = async (req, res) => {
   }
 };
 
-// controllers/authController.js
 
-// ... existing code
+
+
 exports.resetPassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
@@ -87,22 +87,22 @@ exports.resetPassword = async (req, res) => {
     const isMatch = await user.comparePassword(oldPassword);
     if (!isMatch) return res.status(400).json({ error: "Old password is incorrect" });
 
-    user.password = newPassword; // 🔐 Pre-save hook will hash it
+    user.password = newPassword; //  Pre-save hook will hash it
     await user.save();
 
     res.json({ message: "Password updated successfully" });
   } catch (err) {
-     console.error("❌ Password reset error:", err.message);
+     console.error(" Password reset error:", err.message);
     res.status(500).json({ error: "Password reset failed", details: err.message });
   }
 };
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
-  console.log("📧 Forgot password request for:", email); // ✅ Add this
+  console.log(" Forgot password request for:", email); 
   const user = await User.findOne({ email });
   if (!user) 
     {
-      console.log("❌ User not found for:", email); // ✅ Add this
+      console.log(" User not found for:", email); 
       return res.status(400).json({ error: "User not found" });
     }
 

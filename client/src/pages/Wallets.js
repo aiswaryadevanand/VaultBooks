@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -196,7 +195,7 @@ const Wallets = () => {
         </div>
       </div>
 
-      {/* Confirm Dialog */}
+      
       {confirmId && (
         <ConfirmDialog
           message="Are you sure you want to delete this wallet?"

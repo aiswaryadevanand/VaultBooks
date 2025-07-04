@@ -2,7 +2,7 @@ const Wallet = require('../models/Wallet');
 
 exports.checkWalletRole = (allowedRoles) => {
   return async (req, res, next) => {
-    console.log('🛡️ Checking role:', req.walletRole);
+    console.log(' Checking role:', req.walletRole);
     const walletId =
       (req.params && req.params.walletId) ||
       (req.body && req.body.walletId) ||
@@ -35,7 +35,7 @@ exports.checkWalletRole = (allowedRoles) => {
       }
 
       if (!allowedRoles.includes(member.role)) {
-        console.log('❌ Role not allowed for this action');
+        console.log(' Role not allowed for this action');
         return res.status(403).json({ error: 'Access denied: insufficient role' });
       }
 

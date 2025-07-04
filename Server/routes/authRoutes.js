@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { register, login, getLatestUser,resetPassword,forgotPassword,resetPasswordViaToken } = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
-const {checkWalletRole} = require('../middlewares/roleMiddleware'); // ✅ Correct import
+const {checkWalletRole} = require('../middlewares/roleMiddleware');
 
 // Public routes
 router.post('/register', register);

@@ -4,7 +4,7 @@ const Transaction = require('../models/Transaction');
 const Wallet = require('../models/Wallet');
 const logAudit = require('../utils/logAudit');
 
-// ✅ Utility: Get start and end of a month
+//  Utility: Get start and end of a month
 const getMonthRange = (monthStr) => {
   if (!monthStr) return null;
   const [year, month] = monthStr.split('-').map(Number);
@@ -13,7 +13,7 @@ const getMonthRange = (monthStr) => {
   return { startDate, endDate };
 };
 
-// ✅ Utility: Check if user is owner or member of wallet
+//  Utility: Check if user is owner or member of wallet
 const isAuthorizedForWallet = (wallet, userId) => {
   const userIdStr = userId.toString();
   return (
@@ -22,7 +22,7 @@ const isAuthorizedForWallet = (wallet, userId) => {
   );
 };
 
-// 📈 1. Income vs Expense
+//  1. Income vs Expense
 exports.getIncomeVsExpense = async (req, res) => {
   const { walletId, view = 'monthly', month } = req.query;
   const userId = req.user?._id || req.user?.userId;
@@ -67,12 +67,12 @@ exports.getIncomeVsExpense = async (req, res) => {
 
     res.json({ labels, incomeData, expenseData, summary: { totalIncome, totalExpense } });
   } catch (err) {
-    console.error("💥 Income vs Expense Error:", err);
+    console.error(" Income vs Expense Error:", err);
     res.status(500).json({ error: 'Server error', message: err.message });
   }
 };
 
-// 🥧 2. Expense by Category
+//  2. Expense by Category
 exports.getExpenseByCategory = async (req, res) => {
   const { walletId, month } = req.query;
   const userId = req.user?._id || req.user?.userId;
@@ -105,12 +105,12 @@ exports.getExpenseByCategory = async (req, res) => {
 
     res.json({ labels, data });
   } catch (err) {
-    console.error('💥 Expense by Category Error:', err);
+    console.error(' Expense by Category Error:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
-// 📊 3. Wallet Performance
+// 3. Wallet Performance
 exports.getWalletPerformance = async (req, res) => {
   const { month } = req.query;
   const userId = req.user?._id || req.user?.userId;
@@ -161,24 +161,24 @@ exports.getWalletPerformance = async (req, res) => {
 
     res.json({ labels, income, expense });
   } catch (err) {
-    console.error('💥 Wallet Performance Error:', err);
+    console.error(' Wallet Performance Error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// 🗂 4. Distinct Categories (user-specific)
+//  4. Distinct Categories (user-specific)
 exports.getDistinctCategories = async (req, res) => {
   try {
     const userId = req.user._id;
     const categories = await Transaction.distinct('category', { userId });
     res.json({ categories });
   } catch (error) {
-    console.error('💥 Get Distinct Categories Error:', error);
+    console.error(' Get Distinct Categories Error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// 📝 5. Log Export Action
+//  5. Log Export Action
 exports.logExportAction = async (req, res) => {
   const { action, walletId, details } = req.body;
   const userId = req.user?._id || req.user?.userId;
@@ -212,7 +212,7 @@ exports.logExportAction = async (req, res) => {
 
     res.status(200).json({ message: 'Export action logged successfully' });
   } catch (error) {
-    console.error('💥 Export Action Logging Error:', error);
+    console.error(' Export Action Logging Error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

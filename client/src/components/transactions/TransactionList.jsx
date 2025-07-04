@@ -231,7 +231,7 @@ const TransactionList = ({ userRole }) => {
         </table>
       </div>
 
-      {/* Confirm Dialog */}
+      
       {confirmId && (
         <ConfirmDialog
           message="Are you sure you want to delete this transaction?"

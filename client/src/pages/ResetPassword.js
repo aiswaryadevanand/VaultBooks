@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Header from "../pages/Header";
 import axios from "axios";
-import { FiEye, FiEyeOff } from "react-icons/fi"; // 👁️ Icons
+import { FiEye, FiEyeOff } from "react-icons/fi"; 
 
 const ResetPassword = () => {
   const [oldPassword, setOldPassword] = useState("");
@@ -65,7 +65,7 @@ const ResetPassword = () => {
     <>
       <Header />
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-        <h2 className="text-2xl font-bold mb-4">🔒 Reset Password</h2>
+        <h2 className="text-2xl font-bold mb-4"> Reset Password</h2>
         {message && (
           <div
             className={`mb-4 text-sm px-4 py-2 rounded ${

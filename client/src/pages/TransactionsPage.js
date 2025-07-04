@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
-import { clearSelectedTransaction } from '../redux/slices/transactionSlice'; // ✅
+import { clearSelectedTransaction } from '../redux/slices/transactionSlice'; 
 import TransactionForm from '../components/transactions/TransactionForm';
 import TransactionList from '../components/transactions/TransactionList';
 
@@ -8,7 +8,7 @@ const TransactionsPage = () => {
   const dispatch = useDispatch();
   const userRole = useSelector((state) => state.wallets.userRole || 'viewer');
 
-  // ✅ Clear selected transaction on initial render
+  
   useEffect(() => {
     dispatch(clearSelectedTransaction());
   }, [dispatch]);

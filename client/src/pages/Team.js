@@ -79,12 +79,12 @@ const Team = () => {
 
   return (
     <div className="relative">
-      {/* 🔲 Blur background when toast is visible */}
+      {/*  Blur background when toast is visible */}
       {isToastVisible && (
         <div className="fixed inset-0 backdrop-blur-sm bg-black/10 z-[998] pointer-events-none transition duration-300" />
       )}
 
-      {/* 🔔 Centered Toaster */}
+      {/*  Centered Toaster */}
       <Toaster
         toastOptions={{
           duration: 2000,

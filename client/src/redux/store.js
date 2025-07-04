@@ -11,11 +11,11 @@ const store = configureStore({
     auth: authReducer,
     wallets: walletReducer,
     transactions: transactionReducer,
-    [transactionApi.reducerPath]: transactionApi.reducer, // ✅ Add this
+    [transactionApi.reducerPath]: transactionApi.reducer, 
     reminders: reminderReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(transactionApi.middleware), // ✅ Add this
+    getDefaultMiddleware().concat(transactionApi.middleware), 
 });
 
 export default store;

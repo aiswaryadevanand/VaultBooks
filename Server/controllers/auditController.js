@@ -1,7 +1,7 @@
 
 const AuditLog = require('../models/AuditLog');
 
-// ✅ GET /api/audit-logs
+//  GET /api/audit-logs
 exports.getAuditLogs = async (req, res) => {
   try {
     const { userId, walletId, action, date, page = 1, limit = 10 } = req.query;
@@ -39,7 +39,7 @@ exports.getAuditLogs = async (req, res) => {
       totalLogs,
     });
   } catch (err) {
-    console.error('💥 Fetch Audit Logs Error:', err);
+    console.error(' Fetch Audit Logs Error:', err);
     res.status(500).json({ message: 'Failed to fetch audit logs', error: err.message });
   }
 };

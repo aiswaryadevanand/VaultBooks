@@ -10,8 +10,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPasswordToken from "./pages/ResetPasswordToken";
 
 // Protected Pages
-import WalletListPage from "./pages/WalletListPage"; // First page after login
-import Wallets from "./pages/Wallets"; // Wallet Create/Edit page
+import WalletListPage from "./pages/WalletListPage"; 
+import Wallets from "./pages/Wallets"; 
 import Reminder from "./pages/Reminder";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";

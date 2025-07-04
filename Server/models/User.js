@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   role:     { type: String, enum: ['user', 'admin'], default: 'user' }
 }, { timestamps: true });
 
-// ✅ Pre-save hook to hash the password
+//  Pre-save hook to hash the password
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {
@@ -20,7 +20,7 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// ✅ Instance method to compare passwords
+//  Instance method to compare passwords
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };

@@ -13,7 +13,7 @@ const { checkWalletRole } = require('../middlewares/roleMiddleware');
 
 const router = express.Router();
 
-// /api/transactions
+
 // Get all transactions - all roles allowed
 router.route('/')
   .get(authMiddleware, checkWalletRole(['owner', 'accountant', 'viewer']), getTransactions)
@@ -23,9 +23,6 @@ router.route('/')
 router.route('/:id')
   .put(authMiddleware, upload.single('file'), checkWalletRole(['owner', 'accountant']),  updateTransaction)
   .delete(authMiddleware, checkWalletRole(['owner']), deleteTransaction);
-
-  
-  // ... rest of the logic
 
 
 module.exports = router;
