@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useState } from 'react';
 import { fetchAuditLogs } from '../api/auditAPI';
 import { useParams } from 'react-router-dom';
@@ -7,12 +8,16 @@ const AuditLogs = () => {
   const { walletId } = useParams();
   const [logs, setLogs] = useState([]);
   const [filters, setFilters] = useState({ action: '', date: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const loadLogs = async () => {
+  const loadLogs = async (page = 1) => {
     if (!walletId) return;
     try {
-      const data = await fetchAuditLogs({ walletId, ...filters });
-      setLogs(data);
+      const data = await fetchAuditLogs({ walletId, ...filters }, page, 10);
+      setLogs(data.logs);
+      setTotalPages(data.totalPages);
+      setCurrentPage(data.currentPage);
     } catch (err) {
       console.error("Failed to fetch logs", err);
       setLogs([]);
@@ -21,12 +26,19 @@ const AuditLogs = () => {
 
   const resetFilters = () => {
     setFilters({ action: '', date: '' });
-    loadLogs();
+    setCurrentPage(1);
+    loadLogs(1);
   };
 
   useEffect(() => {
-    loadLogs();
-  }, [walletId]);
+    loadLogs(currentPage);
+  }, [walletId, currentPage]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
   const getShortDetails = (details, action) => {
     if (!details || typeof details !== 'object') return '-';
@@ -34,26 +46,22 @@ const AuditLogs = () => {
     switch (action) {
       case 'invite-user':
         return `Invited Email: ${details.invitedEmail || '-'} | Role: ${details.role || '-'}`;
-
       case 'create-reminder':
         return `Description: ${details.description || '-'} | Due Date: ${details.dueDate ? new Date(details.dueDate).toLocaleDateString() : '-'}`;
-
       case 'create-wallet':
       case 'update-wallet':
         return `Name: ${details.name || '-'} | Type: ${details.type || '-'}`;
-
       case 'create-transaction':
       case 'update-transaction':
       case 'delete-transaction':
         return `Amount: ₹${details.amount || '-'} | Category: ${details.category}`;
-
       case 'create-transaction-transfer':
-        return `Transfer from ${details?.fromTx?.walletId || '-'} to ${details?.toTx?.walletId || '-'} | Amount: ₹${details?.fromTx?.amount || '-'}`;
-
+        return `Transfer from "${details?.fromWallet || '-'}" to "${details?.toWallet || '-'}" | Amount: ₹${details?.amount || '-'}`;
+      case 'export-pdf':
+      case 'export-excel':
+        return `Exported Report: ${details?.reportName || details?.source || 'Unknown'} at ${details?.exportedAt ? new Date(details.exportedAt).toLocaleString() : '-'}`;
       default:
-        return Object.entries(details)
-          .map(([key, value]) => `${key}: ${value}`)
-          .join(' | ') || '-';
+        return Object.entries(details).map(([key, value]) => `${key}: ${value}`).join(' | ') || '-';
     }
   };
 
@@ -79,7 +87,7 @@ const AuditLogs = () => {
           className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
         />
         <div className="flex gap-2">
-          <button onClick={loadLogs} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+          <button onClick={() => loadLogs(1)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
             Filter
           </button>
           <button onClick={resetFilters} className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md">
@@ -114,6 +122,27 @@ const AuditLogs = () => {
               ))}
             </tbody>
           </table>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-center items-center gap-4 p-4 border-t mt-4">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span className="text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>

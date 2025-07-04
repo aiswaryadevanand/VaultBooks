@@ -1,9 +1,10 @@
 
 const AuditLog = require('../models/AuditLog');
 
+// ✅ GET /api/audit-logs
 exports.getAuditLogs = async (req, res) => {
   try {
-    const { userId, walletId, action, date } = req.query;
+    const { userId, walletId, action, date, page = 1, limit = 10 } = req.query;
 
     const filter = {};
     if (userId) filter.userId = userId;
@@ -18,15 +19,27 @@ exports.getAuditLogs = async (req, res) => {
       filter.timestamp = { $gte: start, $lte: end };
     }
 
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const totalLogs = await AuditLog.countDocuments(filter);
+
     const logs = await AuditLog.find(filter)
       .populate('userId', 'username email')
       .populate('walletId', 'name')
-      .sort({ timestamp: -1 });
+      .sort({ timestamp: -1 })
+      .skip(skip)
+      .limit(limitNum);
 
-    res.status(200).json(logs);
+    res.status(200).json({
+      logs,
+      currentPage: pageNum,
+      totalPages: Math.ceil(totalLogs / limitNum),
+      totalLogs,
+    });
   } catch (err) {
-    console.error(err);
+    console.error('💥 Fetch Audit Logs Error:', err);
     res.status(500).json({ message: 'Failed to fetch audit logs', error: err.message });
   }
 };
-

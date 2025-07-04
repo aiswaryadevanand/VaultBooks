@@ -17,16 +17,16 @@ API.interceptors.request.use((config) => {
 });
 
 
-export const fetchAuditLogs = async (filters = {}) => {
+export const fetchAuditLogs = async (filters = {}, page = 1, limit = 10) => {
   try {
     const { walletId, action, date } = filters;
-    const params = {};
+    const params = { page, limit };
     if (walletId) params.walletId = walletId;
     if (action) params.action = action;
-    if (date) params.date = date;  // Send date to backend
+    if (date) params.date = date;
 
     const res = await API.get('/audit-logs', { params });
-    return res.data;
+    return res.data; // Expected to return { logs, totalPages, currentPage }
   } catch (err) {
     console.error('❌ Error fetching audit logs:', err.response?.data || err.message);
     throw err;
