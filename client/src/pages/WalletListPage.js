@@ -6,8 +6,7 @@ import {
   setSelectedWallet,
   setUserRole,
 } from "../redux/slices/walletSlice";
-import Header from "../pages/Header"; // ✅ Import common Header
-
+import Header from "../pages/Header"; 
 const WalletListPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -52,7 +51,7 @@ const WalletListPage = () => {
 
   return (
     <div>
-      <Header /> {/* ✅ Common Header */}
+      <Header /> {/*  Common Header */}
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <div>

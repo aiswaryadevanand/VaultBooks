@@ -75,7 +75,7 @@ const createTransaction = async (req, res) => {
   await fromTx.save();
   await toTx.save();
 
-  // ✅ Fetch wallet names for logging
+  //  Fetch wallet names for logging
   const fromWallet = await Wallet.findById(walletId).select('name');
   const toWallet = await Wallet.findById(toWalletId).select('name');
 

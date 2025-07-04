@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/slices/authSlice";
 import { User, Home } from "lucide-react";
-import logo from "../assets/logo192.png"; // your uploaded logo
+import logo from "../assets/logo192.png"; 
 import { BiWalletAlt } from "react-icons/bi";
 
 const Header = () => {
@@ -56,7 +56,7 @@ const Header = () => {
         </button>
 
         {/* Dropdown menu */}
-        {/* Dropdown menu */}
+        
 {menuOpen && (
   <div className="absolute right-0 top-full mt-2 w-48 bg-white text-gray-800 border rounded shadow z-50">
     <button

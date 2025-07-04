@@ -1,4 +1,4 @@
-// src/pages/ForgotPassword.js
+
 import React, { useState } from "react";
 import axios from "axios";
 import { Player } from "@lottiefiles/react-lottie-player";
@@ -44,7 +44,7 @@ const ForgotPassword = () => {
           </h1>
         </div>
 
-        <h2 className="text-2xl font-bold mb-4">🔐 Forgot Password</h2>
+        <h2 className="text-2xl font-bold mb-4"> Forgot Password</h2>
 
         {message && (
           <div

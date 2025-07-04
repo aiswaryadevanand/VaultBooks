@@ -1,5 +1,4 @@
 
-
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -61,7 +60,7 @@ const InviteUser = () => {
         Back 
       </div>
 
-      {/* Toast Overlay */}
+      
       {isToastVisible && (
         <div className="fixed inset-0 backdrop-blur-sm bg-black/20 z-40 transition duration-300" />
       )}

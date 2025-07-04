@@ -1,6 +1,4 @@
 
-
-// src/api/reportApi.js
 import axios from 'axios';
 
 const API = axios.create({
@@ -15,19 +13,19 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-// ✅ Line Chart
+//  Line Chart
 export const fetchIncomeVsExpense = (walletId, view = 'monthly', month) =>
   API.get('/reports/income-vs-expense', {
     params: { walletId, view, month },
   });
 
-// ✅ Pie Chart (removed category param)
+//  Pie Chart (removed category param)
 export const fetchExpenseByCategory = (walletId, month) =>
   API.get('/reports/expense-by-category', {
     params: { walletId, month },
   });
 
-// ✅ Bar Chart - Wallet Performance
+//  Bar Chart - Wallet Performance
 export const fetchWalletPerformance = (month) =>
   API.get('/reports/wallet-performance', {
     params: { month },

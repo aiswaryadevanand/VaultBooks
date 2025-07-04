@@ -1,5 +1,4 @@
 
-// models/Budget.js
 const mongoose = require('mongoose');
 
 const budgetSchema = new mongoose.Schema({

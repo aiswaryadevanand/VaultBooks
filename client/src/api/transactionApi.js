@@ -6,7 +6,7 @@ export const transactionApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: 'http://localhost:5000/api',
     prepareHeaders: (headers, { getState }) => {
-      // ✅ Fix: token is directly inside auth, not in auth.user
+      
       const token = getState().auth?.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);

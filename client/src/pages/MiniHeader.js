@@ -1,4 +1,4 @@
-// src/components/MinimalHeader.js
+
 import React from "react";
 import logo from "../assets/logo192.png";
 

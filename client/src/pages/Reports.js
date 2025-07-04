@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
@@ -78,13 +76,12 @@ const Reports = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* 🔍 Month Filter */}
-      {/* 📊 Page Title */}
+
       <h1 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
          Reports Dashboard
       </h1>
 
-      {/* 🔍 Custom Month Filter */}
+      {/*  Custom Month Filter */}
       <div className="flex flex-wrap items-center gap-4">
         <label className="font-medium text-sm">Month:</label>
         <MonthYearPicker value={filterMonth} onChange={setFilterMonth} />
@@ -102,9 +99,9 @@ const Reports = () => {
         </button>
       </div>
 
-      {/* 📊 Chart Grid */}
+      {/*  Chart Grid */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* 📈 Income vs Expense */}
+        {/*  Income vs Expense */}
         <div className="bg-white p-4 rounded-xl shadow-sm h-[400px]">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-semibold">Income vs Expense</h2>
@@ -136,7 +133,7 @@ const Reports = () => {
           )}
         </div>
 
-        {/* 🥧 Expense by Category */}
+        {/*  Expense by Category */}
         <div className="bg-white p-4 rounded-xl shadow-sm h-[400px] flex flex-col justify-between">
           <h2 className="text-lg font-semibold mb-2 text-center">Expense Breakdown by Category</h2>
           {pieData.labels.length > 0 && (
@@ -147,7 +144,7 @@ const Reports = () => {
         </div>
       </div>
 
-      {/* 📊 Wallet Performance */}
+      {/*  Wallet Performance */}
       <div className="bg-white p-4 rounded-xl shadow-sm">
         <h2 className="text-lg font-semibold mb-2">Wallet Performance</h2>
         {walletData.labels.length > 0 && (
@@ -159,8 +156,8 @@ const Reports = () => {
         )}
       </div>
 
-      {/* 📄 Export Buttons — Only for Owners */}
-      {/* 📤 Export Buttons */}
+      {/*  Export Buttons — Only for Owners */}
+      
       {userRole === 'owner' &&
         (chartData || pieData.labels.length > 0 || walletData.labels.length > 0) && (
           <div className="flex flex-col items-center mt-6">
@@ -173,7 +170,7 @@ const Reports = () => {
               selectedMonth={selectedMonth}
               view={view}
               walletId={walletId}
-              onExport={handleExport} // ✅ Added for audit logging refresh
+              onExport={handleExport} 
             />
           </div>
         )}

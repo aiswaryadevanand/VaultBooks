@@ -98,7 +98,7 @@ exports.getDueReminders = async (req, res) => {
 
     res.json(reminders);
   } catch (err) {
-    console.error("🚫 getDueReminders error:", err.message);
+    console.error(" getDueReminders error:", err.message);
     if (!res.headersSent) {
       return res.status(500).json({ error: 'Failed to fetch due reminders' });
     }
