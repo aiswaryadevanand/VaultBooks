@@ -1,9 +1,10 @@
+
 const mongoose = require('mongoose');
 const Transaction = require('../models/Transaction');
 const Wallet = require('../models/Wallet');
 const logAudit = require('../utils/logAudit');
 
-// ✅ Utility functions
+// ✅ Utility: Get start and end of a month
 const getMonthRange = (monthStr) => {
   if (!monthStr) return null;
   const [year, month] = monthStr.split('-').map(Number);
@@ -12,6 +13,7 @@ const getMonthRange = (monthStr) => {
   return { startDate, endDate };
 };
 
+// ✅ Utility: Check if user is owner or member of wallet
 const isAuthorizedForWallet = (wallet, userId) => {
   const userIdStr = userId.toString();
   return (
@@ -38,7 +40,6 @@ exports.getIncomeVsExpense = async (req, res) => {
     const dateFilter = getMonthRange(month);
     const transactions = await Transaction.find({
       walletId,
-      userId,
       type: { $in: ['income', 'expense'] },
       ...(dateFilter && { date: { $gte: dateFilter.startDate, $lte: dateFilter.endDate } })
     });
@@ -90,7 +91,6 @@ exports.getExpenseByCategory = async (req, res) => {
     const matchStage = {
       walletId: new mongoose.Types.ObjectId(walletId),
       type: 'expense',
-      userId: new mongoose.Types.ObjectId(userId),
       ...(dateFilter && { date: { $gte: dateFilter.startDate, $lte: dateFilter.endDate } })
     };
 
@@ -129,7 +129,6 @@ exports.getWalletPerformance = async (req, res) => {
     const matchStage = {
       walletId: { $in: walletIds },
       type: { $in: ['income', 'expense'] },
-      userId: new mongoose.Types.ObjectId(userId),
       ...(dateFilter && { date: { $gte: dateFilter.startDate, $lte: dateFilter.endDate } })
     };
 
@@ -167,7 +166,7 @@ exports.getWalletPerformance = async (req, res) => {
   }
 };
 
-// 🗂 4. Distinct Categories
+// 🗂 4. Distinct Categories (user-specific)
 exports.getDistinctCategories = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -179,7 +178,6 @@ exports.getDistinctCategories = async (req, res) => {
   }
 };
 
-
 // 📝 5. Log Export Action
 exports.logExportAction = async (req, res) => {
   const { action, walletId, details } = req.body;
@@ -190,7 +188,6 @@ exports.logExportAction = async (req, res) => {
     return res.status(400).json({ message: 'Invalid export action' });
   }
 
-  // ✅ Ensure walletId is present
   if (!walletId) {
     return res.status(400).json({ message: 'walletId is required' });
   }
@@ -203,16 +200,15 @@ exports.logExportAction = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to export this wallet\'s reports' });
     }
 
-    
-   await logAudit({
-  userId: req.user.userId,
-  walletId: req.body.walletId || null,
-  action: 'export-pdf', // or 'export-excel'
-  details: {
-    reportName: 'Income vs Expense Report', // or any other dynamic name
-    exportedAt: new Date().toISOString()
-  }
-});
+    await logAudit({
+      userId: req.user.userId,
+      walletId,
+      action,
+      details: {
+        reportName: 'VaultBooks Report',
+        exportedAt: new Date().toISOString()
+      }
+    });
 
     res.status(200).json({ message: 'Export action logged successfully' });
   } catch (error) {
