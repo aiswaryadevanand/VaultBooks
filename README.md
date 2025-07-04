@@ -1,33 +1,77 @@
-# VaultBooks
-# 📘 VaultBooks – Multi-Account Personal & Business Expense Tracker
+# 💼 VaultBooks
 
-VaultBooks is a secure and collaborative MERN stack-based financial tracker. It enables users to manage financial accounts, track expenses/income, set budgets, share wallets with team members, and generate reports.
-
----
-
-## 🚀 Tech Stack
-
-- **Frontend**: React.js
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB Atlas
-- **Charting**: Chart.js
-- **Exports**: jsPDF, xlsx
+**VaultBooks** is a full-stack financial management app that allows individuals and teams to track income, expenses, budgets, and reminders across multiple wallets. Built using the **MERN stack** (MongoDB, Express, React, Node.js), it supports user roles, collaborative wallets, and visual dashboards.
 
 ---
 
-## 👥 Team Roles
+## 🚀 Features
 
-| Role    | Responsibility                        |
-|---------|----------------------------------------|
-| Owner   | Project setup, wallets, reports        |
-| Dev 1   | Authentication, reminders              |
-| Dev 2   | Transactions, budgeting, audit logs    |
+### ✅ Authentication
+- User registration, login, logout
+- Forgot/Reset password via email
+- JWT-based secure sessions
+
+### 🧑‍🤝‍🧑 Wallets with Roles
+- Create personal or business wallets
+- Invite team members with roles:
+  - **Owner**: Full access
+  - **Editor**: Can manage transactions/budgets
+  - **Viewer**: Read-only
+
+### 💳 Transactions
+- Add, view, edit, and delete transactions
+- Types: Income, Expense, Transfer
+- Include tags, notes, attachments
+
+### 📊 Dashboard
+- Visual charts: Income vs Expense
+- Budget summaries
+- Recent transactions
+- Reminder overview with badge count
+
+### 🧾 Budgets
+- Set category-wise budget limits
+- Track spending against limits
+
+### ⏰ Reminders
+- Create reminders with due dates and frequency
+- Daily backend cron job checks due items
+- Badge notifications shown in UI
+
+### 🧠 Audit Logs *(planned)*
+- Log important actions (e.g., transaction edits, member changes)
 
 ---
 
-## 📂 Project Structure
+## 🛠 Tech Stack
 
-VaultBooks/
+### Frontend:
+- React.js (with Router)
+- Redux Toolkit (state management)
+- Tailwind CSS
+- Axios
+
+### Backend:
+- Node.js + Express
+- MongoDB + Mongoose
+- JWT Auth
+- Nodemailer (for reset password)
+- Node-cron (for scheduled tasks)
+
+---
+
+## 📂 Folder Structure
+
+vaultbooks/
 ├── client/ # React frontend
-├── server/ # Node/Express backend
+│ ├── pages/
+│ ├── components/
+│ ├── redux/
+│ └── assets/
+├── server/ # Express backend
+│ ├── models/
+│ ├── routes/
+│ ├── controllers/
+│ ├── middleware/
+│ └── utils/
 
