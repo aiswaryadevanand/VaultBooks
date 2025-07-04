@@ -162,12 +162,15 @@ const Wallets = () => {
                   key={wallet._id}
                   className="p-3 border rounded flex justify-between items-center bg-white shadow-sm"
                 >
-                  <div>
-                    <p className="font-medium">{wallet.name}</p>
-                    <p className="text-sm text-gray-600 capitalize">
-                      {wallet.type}
-                    </p>
-                  </div>
+                  <div className="cursor-pointer" onClick={() => navigate(`/wallets/${wallet._id}`)}>
+  <p className="font-medium text-blue-600 hover:underline">
+    {wallet.name}
+  </p>
+  <p className="text-sm text-gray-600 capitalize">
+    {wallet.type}
+  </p>
+</div>
+
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleEdit(wallet)}
