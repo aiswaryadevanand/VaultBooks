@@ -6,6 +6,8 @@ import { setCredentials } from '../redux/slices/authSlice';
 import { Player } from '@lottiefiles/react-lottie-player';
 import walletAnim from '../assets/wallet.json';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import logo from "../assets/logo192.png";
+
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -59,7 +61,13 @@ const Register = () => {
     <div className="flex h-screen">
       {/* Left Side */}
       <div className="w-1/2 flex flex-col justify-center bg-gray-100 p-10">
-        <h1 className="text-3xl font-bold mb-6">VaultBooks</h1>
+        <div className="flex items-center gap-3 mb-6">
+  <img src={logo} alt="VaultBooks Logo" className="w-10 h-10" />
+  <h1 className="text-3xl font-extrabold tracking-wide text-blue-400">
+    Vault<span className="text-gray-800">Books</span>
+  </h1>
+</div>
+
         <h2 className="text-xl font-semibold mb-2">Create an Account</h2>
         <p className="text-gray-700 mb-8">Join us today by entering your details below.</p>
 
