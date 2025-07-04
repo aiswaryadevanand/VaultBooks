@@ -1,4 +1,4 @@
-// components/MonthYearPicker.jsx
+
 import React from 'react';
 
 const months = [

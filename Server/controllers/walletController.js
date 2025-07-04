@@ -199,7 +199,7 @@ exports.getWalletDetailsWithRoleCheck = async (req, res) => {
     if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
 
     res.json({
-      message: `✅ Access granted to wallet as ${req.userRole}`,
+      message: ` Access granted to wallet as ${req.userRole}`,
       wallet,
       userRole: req.userRole,
     });

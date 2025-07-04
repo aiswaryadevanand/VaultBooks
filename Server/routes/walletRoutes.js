@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middlewares/authMiddleware'); // Assuming you have an auth middleware
-const {checkWalletRole} = require('../middlewares/roleMiddleware'); // Assuming you have a role middleware
-const {getWalletDetailsWithRoleCheck}= require('../controllers/walletController'); // Middleware to get wallet details and check role
+const authMiddleware = require('../middlewares/authMiddleware'); 
+const {checkWalletRole} = require('../middlewares/roleMiddleware'); 
+const {getWalletDetailsWithRoleCheck}= require('../controllers/walletController'); 
 // Importing the wallet controller functions
 const{
     createWallet,

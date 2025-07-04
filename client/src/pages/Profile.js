@@ -27,16 +27,6 @@ const Profile = () => {
           <span>{user.email}</span>
         </div>
 
-        {/* <div className="flex justify-between border-b pb-2">
-          <span className="font-semibold text-gray-700">User ID:</span>
-          <span>{user._id}</span>
-        </div> */}
-
-        {/* Optional: Add role if you store it globally */}
-        {/* <div className="flex justify-between border-b pb-2">
-          <span className="font-semibold text-gray-700">Role:</span>
-          <span>{user.role || "Member"}</span>
-        </div> */}
       </div>
     </div>
     </>

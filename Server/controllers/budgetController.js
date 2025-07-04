@@ -13,7 +13,7 @@ const isAuthorizedForWallet = (wallet, userId) => {
 };
 
 exports.createBudget = async (req, res) => {
-  console.log("🧩 [createBudget] Hit API");
+  console.log(" [createBudget] Hit API");
   try {
     const { walletId, category, limit } = req.body;
     const userId = req.user.userId || req.user.id;
@@ -49,7 +49,7 @@ exports.createBudget = async (req, res) => {
 
     res.status(201).json(budget);
   } catch (err) {
-    console.error("💥 Error creating budget:", err);
+    console.error(" Error creating budget:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -67,7 +67,7 @@ exports.getBudgets = async (req, res) => {
     const budgets = await Budget.find({ walletId });
     res.status(200).json(budgets);
   } catch (err) {
-    console.error("💥 Error in getBudgets:", err);
+    console.error(" Error in getBudgets:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -102,7 +102,7 @@ exports.updateBudget = async (req, res) => {
 
     res.status(200).json(budget);
   } catch (err) {
-    console.error("💥 Error updating budget:", err);
+    console.error(" Error updating budget:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -130,7 +130,7 @@ exports.deleteBudget = async (req, res) => {
 
     res.status(200).json({ message: 'Budget deleted successfully' });
   } catch (err) {
-    console.error("💥 Error deleting budget:", err);
+    console.error(" Error deleting budget:", err);
     res.status(500).json({ error: err.message });
   }
 };

@@ -50,7 +50,7 @@ const transactionSchema = new mongoose.Schema({
   default: false
 },
 
-  // ✅ Recurring transaction fields
+  //  Recurring transaction fields
   recurring: {
     type: Boolean,
     default: false

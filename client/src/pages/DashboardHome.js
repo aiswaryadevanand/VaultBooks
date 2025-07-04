@@ -36,7 +36,7 @@ const DashboardHome = () => {
         setReminders(reminderRes.data || []);
         setTransactions(txRes.data || []);
 
-        // ✅ Count both overdue and upcoming reminders
+        // Count both overdue and upcoming reminders
         const now = new Date();
         const in7Days = new Date();
         in7Days.setDate(now.getDate() + 7);

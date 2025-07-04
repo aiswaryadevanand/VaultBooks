@@ -11,7 +11,7 @@ deleteReminder,
 getDueReminders
 } = require('../controllers/reminderController');
 
-router.use(auth); // Protect all routes
+router.use(auth); 
 router.get('/due', getDueReminders);
 // Anyone with access (including viewer) can read reminders
 router.get('/:walletId', getReminders);

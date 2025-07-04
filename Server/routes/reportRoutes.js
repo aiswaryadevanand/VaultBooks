@@ -14,15 +14,15 @@ const {
 const authMiddleware = require('../middlewares/authMiddleware');
 const { checkWalletRole } = require('../middlewares/roleMiddleware');
 
-// ✅ These routes require walletId → Role check
+//  These routes require walletId → Role check
 router.get('/income-vs-expense', authMiddleware, checkWalletRole(['owner', 'accountant', 'viewer']), getIncomeVsExpense);
 router.get('/expense-by-category', authMiddleware, checkWalletRole(['owner', 'accountant', 'viewer']), getExpenseByCategory);
 router.get('/distinct-categories', authMiddleware, checkWalletRole(['owner', 'accountant', 'viewer']), getDistinctCategories);
 
-// ❌ Wallet ID not used — no role check
+//  Wallet ID not used — no role check
 router.get('/wallet-performance', authMiddleware, getWalletPerformance);
 
-// ✅ Export logging
+//  Export logging
 router.post('/export', authMiddleware, logExportAction);
 
 module.exports = router;

@@ -13,5 +13,5 @@ export const getBudgets = (walletId) => API.get(`/budgets/${walletId}`);
 export const updateBudget = (id, data) => API.put(`/budgets/${id}`, data);
 export const deleteBudget = (id, { walletId }) =>
   API.delete(`/budgets/${id}`, {
-    data: { walletId }, // 🟢 Axios DELETE supports body via `data` key
+    data: { walletId }, 
   });

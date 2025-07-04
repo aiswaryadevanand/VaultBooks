@@ -1,4 +1,4 @@
-// DashboardLayout.jsx
+
 import React, { useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -61,7 +61,7 @@ const DashboardLayout = () => {
       <div className="flex flex-1 overflow-hidden">
         <div className="w-64 bg-gray-100 text-black flex flex-col justify-between border-r border-gray-300 p-6">
           <div>
-            {/* <h1 className="text-2xl font-extrabold text-blue-700 mb-10 tracking-wide">VaultBooks</h1> */}
+            
             {navItems.map(({ label, icon, path, badge }) => {
               const isActive = location.pathname === path;
               return (
@@ -84,9 +84,7 @@ const DashboardLayout = () => {
           {walletId && (
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-4">
-                {/* <button onClick={() => navigate("/wallets-list")} className="text-blue-600 hover:underline text-sm">
-                  ← Back to Wallets
-                </button> */}
+                
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
                     💼 {selectedWallet.name}
