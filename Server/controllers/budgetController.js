@@ -85,20 +85,35 @@ exports.updateBudget = async (req, res) => {
     if (!wallet) return res.status(404).json({ message: 'Associated wallet not found' });
     if (!isAuthorizedForWallet(wallet, userId)) return res.status(403).json({ message: 'Unauthorized' });
 
-    const oldData = { ...budget.toObject() };
+    // Track changes for audit logging
+    const changes = {};
 
-    if (category) budget.category = category.trim().toLowerCase();
-    if (limit !== undefined) budget.limit = Number(limit);
-    if (spent !== undefined) budget.spent = Number(spent);
+    if (category && category.trim().toLowerCase() !== budget.category) {
+      changes.category = { from: budget.category, to: category.trim().toLowerCase() };
+      budget.category = category.trim().toLowerCase();
+    }
+
+    if (limit !== undefined && Number(limit) !== budget.limit) {
+      changes.limit = { from: budget.limit, to: Number(limit) };
+      budget.limit = Number(limit);
+    }
+
+    if (spent !== undefined && Number(spent) !== budget.spent) {
+      changes.spent = { from: budget.spent, to: Number(spent) };
+      budget.spent = Number(spent);
+    }
 
     await budget.save();
 
-    await logAudit({
-      userId,
-      walletId: wallet._id,
-      action: 'update-budget',
-      details: { old: oldData, updated: { category, limit, spent } }
-    });
+    // Only log if something changed
+    if (Object.keys(changes).length > 0) {
+      await logAudit({
+        userId,
+        walletId: wallet._id,
+        action: 'update-budget',
+        details: changes
+      });
+    }
 
     res.status(200).json(budget);
   } catch (err) {
@@ -106,6 +121,7 @@ exports.updateBudget = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 exports.deleteBudget = async (req, res) => {
   try {

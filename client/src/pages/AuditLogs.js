@@ -59,7 +59,9 @@ const AuditLogs = () => {
         return `Changed role of ${details.targetUser || '-'} to ${details.newRole}`;
       case 'remove-member':
         return `Removed member: ${details.removedEmail || '-'}`;
-
+      case 'update-budget':
+        const updated = details?.updated || {};
+        return `Updated Budget → Category: ${updated.category || '-'}, Limit: ₹${updated.limit || '-'}`;
       case 'create-transaction-transfer':
         return `Transfer from "${details?.fromWallet || '-'}" to "${details?.toWallet || '-'}" | Amount: ₹${details?.amount || '-'}`;
       case 'export-pdf':
